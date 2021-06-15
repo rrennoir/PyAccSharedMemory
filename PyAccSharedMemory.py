@@ -550,6 +550,16 @@ def string_time_from_ms(time_in_ms: int) -> str:
 
 if __name__ == "__main__":
 
+    """
+    Choice
+    1: 333Hz (Huge file size)
+    2: 60Hz (Moderate file size)
+    3: 1Hz (Small File size)
+    4: Once per lap
+    None: Select at runtime
+    """
+
+    choice = 4
     save_raw = False
 
     print("Setting up shared memory reader process...")
@@ -561,12 +571,17 @@ if __name__ == "__main__":
     options = ["1: 333Hz (Huge file size)", "2: 60Hz (Moderate file size)",
                "3: 1Hz (Small File size)", "4: Once per lap"]
 
+    if not choice:
     choice = input("Save data at which rate ?\n" + "\n".join(options) + "\n")
     while choice not in ["1", "2", "3", "4"]:
         choice = input("Save data at which rate ?\n" +
                        "\n".join(options) + "\n")
 
     choice = int(choice)
+
+    else:
+        print(f"Choice {choice} selected by default, set choice to None to show the menu at runtime.")
+
     if choice == 1:
         rate = 333
 
