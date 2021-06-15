@@ -3,9 +3,9 @@ from multiprocessing.connection import Connection
 import queue
 import struct
 import copy
+import datetime
 import time
 import pickle
-import json
 import csv
 from enum import Enum
 from multiprocessing import Process, Queue, Pipe
@@ -279,8 +279,8 @@ def read_graphics_map(graphic_map: accSM) -> dict:
     graphic_map.seek(0)
     return {
         "packetID": graphic_map.unpack_value("i"),
-        "ac_status": ACC_STATUS(graphic_map.unpack_value("i")),
-        "ac_session_type": ACC_SESSION_TYPE(graphic_map.unpack_value("i")),
+        "acc_status": ACC_STATUS(graphic_map.unpack_value("i")),
+        "acc_session_type": ACC_SESSION_TYPE(graphic_map.unpack_value("i")),
         "currentTime": graphic_map.unpack_string(15),
         "lastTime": graphic_map.unpack_string(15),
         "bestTime": graphic_map.unpack_string(15),
@@ -369,6 +369,62 @@ def read_graphics_map(graphic_map: accSM) -> dict:
     }
 
 
+def sort_acc_data(acc_data: dict) -> dict:
+
+    physics = acc_data["physics"]
+    graphics = acc_data["graphics"]
+
+    return {
+        # "gas": physics["gas"],
+        # "brake": physics["brake"],
+        # "clutch": physics["clutch"],
+        "fuel": physics["fuel"],
+        # "gear": physics["gear"],
+        # "rmp": physics["rpm"],
+        "brakeBias": physics["brakeBias"],
+        # "steerAngle": physics["steerAngle"],
+        # "speed": physics["speedKmh"],
+        "pressureFL": physics["wheelsPressure"][0],
+        "pressureFR": physics["wheelsPressure"][1],
+        "pressureRL": physics["wheelsPressure"][2],
+        "pressureRR": physics["wheelsPressure"][3],
+        "coreTempFL": physics["tyreCoreTemperature"][0],
+        "coreTempFR": physics["tyreCoreTemperature"][1],
+        "coreTempRL": physics["tyreCoreTemperature"][2],
+        "coreTempRR": physics["tyreCoreTemperature"][3],
+        "tc": graphics["TC"],
+        "tccut": graphics["TCCUT"],
+        "abs": graphics["ABS"],
+        "airTemp": physics["airTemp"],
+        "roadTemp": physics["roadTemp"],
+        "frontBrakeCompound": physics["frontBrakeCompound"],
+        "rearBrakeCompound": physics["rearBrakeCompound"],
+        "brakeTempFL": physics["brakeTemp"][0],
+        "brakeTempFR": physics["brakeTemp"][1],
+        "brakeTempRL": physics["brakeTemp"][2],
+        "brakeTempRR": physics["brakeTemp"][3],
+        "padLifeFL": physics["padLife"][0],
+        "padLifeFR": physics["padLife"][1],
+        "padLifeRL": physics["padLife"][2],
+        "padLifeRR": physics["padLife"][3],
+        "discLifeFL": physics["discLife"][0],
+        "discLifeFR": physics["discLife"][1],
+        "discLifeRL": physics["discLife"][2],
+        "discLifeRR": physics["discLife"][3],
+        "accStatus": graphics["acc_status"],
+        "accSessionType": graphics["acc_session_type"],
+        # "currentLap": graphics["iCurrentTime"],
+        "lastLap": graphics["iLastTime"],
+        "bestLap": graphics["iBestTime"],
+        "sessionTimeLeft": graphics["sessionTimeLeft"],
+        "isInPit": graphics["isInPit"],
+        "isInPitLane": graphics["isInPitLane"],
+        "completedLaps": graphics["completedLaps"],
+        "numberOfLaps": graphics["numberOfLaps"],
+        "tyreCompound": graphics["tyreCompound"],
+    }
+
+
 def read_shared_memory(comm: Connection, data_queue: Queue):
 
     with accSM(-1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ) as physicSM, accSM(-1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ) as graphicSM:
@@ -393,9 +449,6 @@ def read_shared_memory(comm: Connection, data_queue: Queue):
                 pPacketID = physicSM.unpack_value("i")
                 gPacketID = graphicSM.unpack_value("i")
 
-                if pPacketID % 333 == 0:
-                    print(f"Current physics packetID: {pPacketID}", end="\r")
-
                 if pPacketID != last_pPacketID:
                     last_pPacketID = pPacketID
                     physics = read_physic_map(physicSM)
@@ -403,9 +456,6 @@ def read_shared_memory(comm: Connection, data_queue: Queue):
                     if gPacketID != last_gPacketID:
                         last_gPacketID = gPacketID
                         graphics = read_graphics_map(graphicSM)
-
-                    else:
-                        graphics = gPacketID
 
                     data = {"physics": physics, "graphics": graphics}
                     data_queue.put(copy.deepcopy(data))
@@ -417,41 +467,90 @@ def read_shared_memory(comm: Connection, data_queue: Queue):
             print("ACC isn't running.")
             comm.send("READING_FAILURE")
 
-    print("\nProcess Terminated.")
+    comm.send("PROCESS_TERMINATED")
+    print("Process Terminated.")
 
 
 def saveAccData(data: list):
-    start_json = time.time()
-    print("Saving data to 'LastRun.json'...")
-    with open("./LastRun.json", "w") as dataJsonFp:
-        json.dump(data, dataJsonFp, default=str)
-    end_json = time.time()
 
-    # Too lazy for this kek
+    use_csv = True
+    use_pickle = False
 
-    # start_csv = time.time()
-    # print("Saving data to 'LastRun.csv'...")
-    # with open("./LastRun.csv", "w") as dataCsvFp:
-    #     writer = csv.DictWriter(dataCsvFp, fieldnames=data[0]["physics"].keys())
-    #     writer.writerows(row["physics"])
-    # end_csv = time.time()
+    if len(data) == 0:
+        return
 
-    print("Saving data to 'LastRun.pckl'...")
+    utc_date = str(datetime.datetime.utcnow())[
+        :-7].replace("-", "_").replace(" ", "-").replace(":", "_")
+
+    if use_csv:
+        print(f"Saving data to '{utc_date}.csv'...")
+
+        start_csv = time.time()
+        with open(f"./{utc_date}.csv", "w", newline="") as dataCsvFp:
+            writer = csv.DictWriter(dataCsvFp, fieldnames=data[0].keys())
+            writer.writeheader()
+            writer.writerows(data)
+        end_csv = time.time()
+
+        print(f"Saving as csv took: {(end_csv - start_csv):.3f}s")
+
+    if use_pickle:
+        print(f"Saving data to '{utc_date}.pckl'...")
+
+        start_pickle = time.time()
+        with open(f"./{utc_date}.pckl", "wb") as dataPickleFp:
+            pickle.dump(data, dataPickleFp)
+        end_pickle = time.time()
+
+        print(f"Saving as pckl took: {(end_pickle - start_pickle):.3f}s")
+
+
+def save_run_simulation(data: list):
+
+    print("Saving data to 'RunSimulation.pckl'...")
+
     start_pickle = time.time()
-    with open("./LastRun.pckl", "wb") as dataPickleFp:
+    with open("./RunSimulation.pckl", "wb") as dataPickleFp:
         pickle.dump(data, dataPickleFp)
     end_pickle = time.time()
 
-    total_json = end_json - start_json
-    total_csv = 0 # end_csv - start_csv
-    total_pickle = end_pickle - start_pickle
     print(
-        f"json: {total_json:.3f}s, csv: {total_csv:.3f}, pickle: {total_pickle:.3f}s, data size: {len(data)}")
+        f"Saving data as 'RunSimulation.pckl' took {(end_pickle - start_pickle):.3f}s")
+
+
+def string_time_from_ms(time_in_ms: int) -> str:
+
+    minute = time_in_ms // 60_000
+    second = (time_in_ms % 60_000) // 1000
+    millisecond = (time_in_ms % 60_000) % 1000
+
+    if minute < 10:
+        minute_str = f"0{minute}"
+
+    else:
+        minute_str = str(minute)
+
+    if second < 10:
+        second_str = f"0{second}"
+
+    else:
+        second_str = str(second)
+
+    if millisecond < 100:
+        millisecond_str = f"0{millisecond}"
+
+    elif millisecond < 10:
+        millisecond_str = f"00{millisecond}"
+
+    else:
+        millisecond_str = str(millisecond)
+
+    return f"{minute_str}:{second_str}.{millisecond_str}"
 
 
 if __name__ == "__main__":
 
-    save_data = False
+    save_raw = False
 
     print("Setting up shared memory reader process...")
     child_com, parent_com = Pipe()
@@ -459,35 +558,72 @@ if __name__ == "__main__":
     shared_memory_reader_process = Process(
         target=read_shared_memory, args=(child_com, data_queue))
 
+    options = ["1: 333Hz (Huge file size)", "2: 60Hz (Moderate file size)",
+               "3: 1Hz (Small File size)", "4: Once per lap"]
+
+    choice = input("Save data at which rate ?\n" + "\n".join(options) + "\n")
+    while choice not in ["1", "2", "3", "4"]:
+        choice = input("Save data at which rate ?\n" +
+                       "\n".join(options) + "\n")
+
+    choice = int(choice)
+    if choice == 1:
+        rate = 333
+
+    elif choice == 2:
+        rate = 60
+
+    elif choice == 3 or choice == 4:
+        rate = 1
+
     print("Reading ACC Shared Memory...")
     shared_memory_reader_process.start()
 
     if parent_com.recv() == "READING_SUCCES":
 
+        acc_data_raw = []
         acc_data = []
-        # Loop until E is pressed (pressed is the & 0x8000 part :D)
-        while not (bool(win32api.GetAsyncKeyState(ord('L')) & 0x8000)):
-            acc_data.append(data_queue.get())
+        prev_lap = 0
+        timer = 0
+        # Loop until CTRL + 0 is pressed (pressed is the & 0x8000 part)
+        while not (bool(win32api.GetAsyncKeyState(0x11) & 0x8000) and bool(win32api.GetAsyncKeyState(ord(0x60)) & 0x8000)):
+            sm_data = data_queue.get(timeout=2)
+            acc_data_raw.append(sm_data)
+            if ((choice != 4 and sm_data["physics"]["packetID"] % (333 // rate) == 0) or (choice == 4 and (prev_lap != sm_data["graphics"]["completedLaps"] and 1000 > sm_data["graphics"]["iCurrentTime"] > 100))):
+                prev_lap = sm_data["graphics"]["completedLaps"]
+                acc_data.append(sort_acc_data(sm_data))
+                print(
+                    f"lap recorded: N°{prev_lap}, time: {string_time_from_ms(sm_data['graphics']['iLastTime'])}")
 
-            # Do stuff with data
+            time_now = time.time()
+            # if CTRL and num 5 is pressed
+            if bool(win32api.GetAsyncKeyState(0x11) & 0x8000) and bool(win32api.GetAsyncKeyState(0x65) & 0x8000) and timer + 1 < time_now:
+                print("Saving data by user request.")
+                saveAccData(acc_data)
+                timer = time.time()
 
     print("Sending stopping command to process...")
     parent_com.send("STOP_PROCESS")
 
     print("Waiting for process to finish...")
-    # Need to empty the queue before joining process (qsize isn't 100% accurate)
-
-    empty_counter = 0
-    while (data_queue.qsize() != 0 and empty_counter < 100):
-        try:
-            acc_data.append(data_queue.get_nowait())
-            empty_counter = 0
-        except queue.Empty:
-            empty_counter += 1
+    if (parent_com.recv() == "PROCESS_TERMINATED"):
+        # Need to empty the queue before joining process (qsize() isn't 100% accurate)
+        while data_queue.qsize() != 0:
+            try:
+                if save_raw:
+                    acc_data_raw.append(data_queue.get_nowait())
+                else:
+                    # acc_data.append(sort_acc_data(data_queue.get_nowait()))
+                    _ = data_queue.get_nowait()
+            except queue.Empty:
+                pass
 
     shared_memory_reader_process.join()
 
-    if save_data:
-        saveAccData(acc_data)
+    if save_raw:
+        save_run_simulation(acc_data_raw)
+
+    print("Automatically saving data.")
+    saveAccData(acc_data)
 
     print("Exiting...")
