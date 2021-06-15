@@ -585,9 +585,20 @@ if __name__ == "__main__":
         acc_data = []
         prev_lap = 0
         timer = 0
+        retry_timer = 0
+
         # Loop until CTRL + 0 is pressed (pressed is the & 0x8000 part)
         while not (bool(win32api.GetAsyncKeyState(0x11) & 0x8000) and bool(win32api.GetAsyncKeyState(0x60) & 0x8000)):
-            sm_data = data_queue.get(timeout=2)
+            
+            sm_data = None
+            if retry_timer < time.time():
+                try:
+                    sm_data = data_queue.get(timeout=0.1)
+
+                except queue.Empty:
+                    retry_timer = time.time() + 2
+
+            if sm_data:
             acc_data_raw.append(sm_data)
             if ((choice != 4 and sm_data["physics"]["packetID"] % (333 // rate) == 0) or (choice == 4 and (prev_lap != sm_data["graphics"]["completedLaps"] and 1000 > sm_data["graphics"]["iCurrentTime"] > 100))):
                 prev_lap = sm_data["graphics"]["completedLaps"]
