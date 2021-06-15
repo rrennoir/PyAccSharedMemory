@@ -572,12 +572,12 @@ if __name__ == "__main__":
                "3: 1Hz (Small File size)", "4: Once per lap"]
 
     if not choice:
-    choice = input("Save data at which rate ?\n" + "\n".join(options) + "\n")
-    while choice not in ["1", "2", "3", "4"]:
-        choice = input("Save data at which rate ?\n" +
-                       "\n".join(options) + "\n")
+        choice = input("Save data at which rate ?\n" + "\n".join(options) + "\n")
+        while choice not in ["1", "2", "3", "4"]:
+            choice = input("Save data at which rate ?\n" +
+                        "\n".join(options) + "\n")
 
-    choice = int(choice)
+        choice = int(choice)
 
     else:
         print(f"Choice {choice} selected by default, set choice to None to show the menu at runtime.")
@@ -614,19 +614,21 @@ if __name__ == "__main__":
                     retry_timer = time.time() + 2
 
             if sm_data:
-            acc_data_raw.append(sm_data)
-            if ((choice != 4 and sm_data["physics"]["packetID"] % (333 // rate) == 0) or (choice == 4 and (prev_lap != sm_data["graphics"]["completedLaps"] and 1000 > sm_data["graphics"]["iCurrentTime"] > 100))):
-                prev_lap = sm_data["graphics"]["completedLaps"]
-                acc_data.append(sort_acc_data(sm_data))
-                print(
-                    f"lap recorded: N°{prev_lap}, time: {string_time_from_ms(sm_data['graphics']['iLastTime'])}")
+                acc_data_raw.append(sm_data)
+                if ((choice != 4 and sm_data["physics"]["packetID"] % (333 // rate) == 0) or (choice == 4 and (prev_lap != sm_data["graphics"]["completedLaps"] and 1000 > sm_data["graphics"]["iCurrentTime"] > 100))):
+                    prev_lap = sm_data["graphics"]["completedLaps"]
+                    acc_data.append(sort_acc_data(sm_data))
+                    print(
+                        f"lap recorded: N°{prev_lap}, time: {string_time_from_ms(sm_data['graphics']['iLastTime'])}")
 
-            time_now = time.time()
-            # if CTRL and num 5 is pressed
-            if bool(win32api.GetAsyncKeyState(0x11) & 0x8000) and bool(win32api.GetAsyncKeyState(0x65) & 0x8000) and timer + 1 < time_now:
-                print("Saving data by user request.")
-                saveAccData(acc_data)
-                timer = time.time()
+                # if CTRL and num 5 is pressed
+                if bool(win32api.GetAsyncKeyState(0x11) & 0x8000) and bool(win32api.GetAsyncKeyState(0x65) & 0x8000) and timer < time.time():
+                    print("Saving data by user request.")
+                    saveAccData(acc_data)
+                    # 5s cooldown to avoid spam
+                    timer = time.time() + 5
+
+            
 
     print("Sending stopping command to process...")
     parent_com.send("STOP_PROCESS")
