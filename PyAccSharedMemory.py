@@ -413,7 +413,7 @@ def sort_acc_data(acc_data: dict) -> dict:
         "discLifeRR": physics["discLife"][3],
         "accStatus": graphics["acc_status"],
         "accSessionType": graphics["acc_session_type"],
-        # "currentLap": graphics["iCurrentTime"],
+        "currentLap": graphics["iCurrentTime"],
         "lastLap": graphics["iLastTime"],
         "bestLap": graphics["iBestTime"],
         "sessionTimeLeft": graphics["sessionTimeLeft"],
@@ -477,6 +477,7 @@ def saveAccData(data: list):
     use_pickle = False
 
     if len(data) == 0:
+        print("No data to save.")
         return
 
     utc_date = str(datetime.datetime.utcnow())[
@@ -548,6 +549,11 @@ def string_time_from_ms(time_in_ms: int) -> str:
     return f"{minute_str}:{second_str}.{millisecond_str}"
 
 
+def is_key_pressed(key: int) -> bool:
+    # is pressed is the & 0x8000 part
+    return bool(win32api.GetAsyncKeyState(key) & 0x8000)
+
+
 if __name__ == "__main__":
 
     """
@@ -596,14 +602,18 @@ if __name__ == "__main__":
 
     if parent_com.recv() == "READING_SUCCES":
 
+        if save_raw:
         acc_data_raw = []
+
         acc_data = []
         prev_lap = 0
         timer = 0
         retry_timer = 0
+        sector_count = -1
+        sectors = []
 
-        # Loop until CTRL + 0 is pressed (pressed is the & 0x8000 part)
-        while not (bool(win32api.GetAsyncKeyState(0x11) & 0x8000) and bool(win32api.GetAsyncKeyState(0x60) & 0x8000)):
+        # Loop until CTRL + 0 is pressed
+        while not (is_key_pressed(0x11) and is_key_pressed(0x60)):
             
             sm_data = None
             if retry_timer < time.time():
@@ -614,7 +624,9 @@ if __name__ == "__main__":
                     retry_timer = time.time() + 2
 
             if sm_data:
+                if save_raw:
                 acc_data_raw.append(sm_data)
+
                 if ((choice != 4 and sm_data["physics"]["packetID"] % (333 // rate) == 0) or (choice == 4 and (prev_lap != sm_data["graphics"]["completedLaps"] and 1000 > sm_data["graphics"]["iCurrentTime"] > 100))):
                     prev_lap = sm_data["graphics"]["completedLaps"]
                     acc_data.append(sort_acc_data(sm_data))
@@ -622,14 +634,13 @@ if __name__ == "__main__":
                         f"lap recorded: N°{prev_lap}, time: {string_time_from_ms(sm_data['graphics']['iLastTime'])}")
 
                 # if CTRL and num 5 is pressed
-                if bool(win32api.GetAsyncKeyState(0x11) & 0x8000) and bool(win32api.GetAsyncKeyState(0x65) & 0x8000) and timer < time.time():
+            if is_key_pressed(0x11) and is_key_pressed(0x65) and timer < time.time():
                     print("Saving data by user request.")
                     saveAccData(acc_data)
                     # 5s cooldown to avoid spam
                     timer = time.time() + 5
 
             
-
     print("Sending stopping command to process...")
     parent_com.send("STOP_PROCESS")
 
@@ -641,7 +652,6 @@ if __name__ == "__main__":
                 if save_raw:
                     acc_data_raw.append(data_queue.get_nowait())
                 else:
-                    # acc_data.append(sort_acc_data(data_queue.get_nowait()))
                     _ = data_queue.get_nowait()
             except queue.Empty:
                 pass
