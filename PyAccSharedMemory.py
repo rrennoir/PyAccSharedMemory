@@ -603,7 +603,7 @@ if __name__ == "__main__":
     if parent_com.recv() == "READING_SUCCES":
 
         if save_raw:
-        acc_data_raw = []
+            acc_data_raw = []
 
         acc_data = []
         prev_lap = 0
@@ -625,7 +625,7 @@ if __name__ == "__main__":
 
             if sm_data:
                 if save_raw:
-                acc_data_raw.append(sm_data)
+                    acc_data_raw.append(sm_data)
 
                 if ((choice != 4 and sm_data["physics"]["packetID"] % (333 // rate) == 0) or (choice == 4 and (prev_lap != sm_data["graphics"]["completedLaps"] and 1000 > sm_data["graphics"]["iCurrentTime"] > 100))):
                     prev_lap = sm_data["graphics"]["completedLaps"]
@@ -633,14 +633,14 @@ if __name__ == "__main__":
                     print(
                         f"lap recorded: N°{prev_lap}, time: {string_time_from_ms(sm_data['graphics']['iLastTime'])}")
 
-                # if CTRL and num 5 is pressed
+            # if CTRL and num 5 is pressed
             if is_key_pressed(0x11) and is_key_pressed(0x65) and timer < time.time():
-                    print("Saving data by user request.")
-                    saveAccData(acc_data)
-                    # 5s cooldown to avoid spam
-                    timer = time.time() + 5
+                print("Saving data by user request.")
+                saveAccData(acc_data)
+                # 5s cooldown to avoid spam
+                timer = time.time() + 5
 
-            
+
     print("Sending stopping command to process...")
     parent_com.send("STOP_PROCESS")
 
