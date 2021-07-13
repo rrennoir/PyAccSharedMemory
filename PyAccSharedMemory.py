@@ -11,6 +11,8 @@ from enum import Enum
 from multiprocessing import Process, Queue, Pipe
 import win32api
 
+from keycode import KeyCode
+
 
 class ACC_STATUS(Enum):
 
@@ -613,7 +615,7 @@ if __name__ == "__main__":
         sectors = []
 
         # Loop until CTRL + 0 is pressed
-        while not (is_key_pressed(0x11) and is_key_pressed(0x60)):
+        while not (is_key_pressed(KeyCode.CTRL_L) and is_key_pressed(KeyCode.NUM_0)):
             
             sm_data = None
             if retry_timer < time.time():
@@ -634,7 +636,7 @@ if __name__ == "__main__":
                         f"lap recorded: N°{prev_lap}, time: {string_time_from_ms(sm_data['graphics']['iLastTime'])}")
 
             # if CTRL and num 5 is pressed
-            if is_key_pressed(0x11) and is_key_pressed(0x65) and timer < time.time():
+            if is_key_pressed(KeyCode.CTRL_L) and is_key_pressed(KeyCode.NUM_5) and timer < time.time():
                 print("Saving data by user request.")
                 saveAccData(acc_data)
                 # 5s cooldown to avoid spam
