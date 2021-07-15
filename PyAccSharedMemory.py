@@ -454,11 +454,11 @@ class accSharedMemory():
                             last_gPacketID = gPacketID
                             graphics = read_graphics_map(graphicSM)
 
-                        if message == "DATA_REQUEST":
-                            data = {"physics": physics, "graphics": graphics}
-                            data_queue.put(copy.deepcopy(data))
-                            comm.send("DATA_OK")
-                            message = ""
+                    if message == "DATA_REQUEST":
+                        data = {"physics": physics, "graphics": graphics}
+                        data_queue.put(copy.deepcopy(data))
+                        comm.send("DATA_OK")
+                        message = ""
 
                     physicSM.seek(0)
                     graphicSM.seek(0)
