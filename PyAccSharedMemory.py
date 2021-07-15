@@ -3,15 +3,8 @@ from multiprocessing.connection import Connection
 import queue
 import struct
 import copy
-import datetime
-import time
-import pickle
-import csv
 from enum import Enum
 from multiprocessing import Process, Queue, Pipe
-import win32api
-
-from keycode import KeyCode
 
 
 class ACC_STATUS(Enum):
@@ -371,299 +364,109 @@ def read_graphics_map(graphic_map: accSM) -> dict:
     }
 
 
-def sort_acc_data(acc_data: dict) -> dict:
+class accSharedMemory():
 
-    physics = acc_data["physics"]
-    graphics = acc_data["graphics"]
+    def __init__(self) -> None:
 
-    return {
-        # "gas": physics["gas"],
-        # "brake": physics["brake"],
-        # "clutch": physics["clutch"],
-        "fuel": physics["fuel"],
-        # "gear": physics["gear"],
-        # "rmp": physics["rpm"],
-        "brakeBias": physics["brakeBias"],
-        # "steerAngle": physics["steerAngle"],
-        # "speed": physics["speedKmh"],
-        "pressureFL": physics["wheelsPressure"][0],
-        "pressureFR": physics["wheelsPressure"][1],
-        "pressureRL": physics["wheelsPressure"][2],
-        "pressureRR": physics["wheelsPressure"][3],
-        "coreTempFL": physics["tyreCoreTemperature"][0],
-        "coreTempFR": physics["tyreCoreTemperature"][1],
-        "coreTempRL": physics["tyreCoreTemperature"][2],
-        "coreTempRR": physics["tyreCoreTemperature"][3],
-        "tc": graphics["TC"],
-        "tccut": graphics["TCCUT"],
-        "abs": graphics["ABS"],
-        "airTemp": physics["airTemp"],
-        "roadTemp": physics["roadTemp"],
-        "frontBrakeCompound": physics["frontBrakeCompound"],
-        "rearBrakeCompound": physics["rearBrakeCompound"],
-        "brakeTempFL": physics["brakeTemp"][0],
-        "brakeTempFR": physics["brakeTemp"][1],
-        "brakeTempRL": physics["brakeTemp"][2],
-        "brakeTempRR": physics["brakeTemp"][3],
-        "padLifeFL": physics["padLife"][0],
-        "padLifeFR": physics["padLife"][1],
-        "padLifeRL": physics["padLife"][2],
-        "padLifeRR": physics["padLife"][3],
-        "discLifeFL": physics["discLife"][0],
-        "discLifeFR": physics["discLife"][1],
-        "discLifeRL": physics["discLife"][2],
-        "discLifeRR": physics["discLife"][3],
-        "accStatus": graphics["acc_status"],
-        "accSessionType": graphics["acc_session_type"],
-        "currentLap": graphics["iCurrentTime"],
-        "lastLap": graphics["iLastTime"],
-        "bestLap": graphics["iBestTime"],
-        "sessionTimeLeft": graphics["sessionTimeLeft"],
-        "isInPit": graphics["isInPit"],
-        "isInPitLane": graphics["isInPitLane"],
-        "completedLaps": graphics["completedLaps"],
-        "numberOfLaps": graphics["numberOfLaps"],
-        "tyreCompound": graphics["tyreCompound"],
-    }
+        print("[pyASM]: Setting up shared memory reader process...")
+        self.child_com, self.parent_com = Pipe()
+        self.data_queue = Queue()
+        self.asm_reader = Process(target=self.read_shared_memory, args=(self.child_com, self.data_queue))
 
 
-def read_shared_memory(comm: Connection, data_queue: Queue):
+    def start(self) -> bool:
+        print("[pyASM]: Reading ACC Shared Memory...")
+        self.asm_reader.start()
+        if self.parent_com.recv() == "READING_SUCCES":
+            return True
 
-    with accSM(-1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ) as physicSM, accSM(-1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ) as graphicSM:
-
-        if sum(physicSM.read()) != 0:
-            # Still pass if acc created the memory map first and is now closed but it's fine in this case.
-            physicSM.seek(0)
-
-            comm.send("READING_SUCCES")
-
-            physics = {}
-            graphics = {}
-            last_pPacketID = 0
-            last_gPacketID = 0
-
-            message = ""
-            while message != "STOP_PROCESS":
-
-                if comm.poll():
-                    message = comm.recv()
-
-                pPacketID = physicSM.unpack_value("i")
-                gPacketID = graphicSM.unpack_value("i")
-
-                if pPacketID != last_pPacketID:
-                    last_pPacketID = pPacketID
-                    physics = read_physic_map(physicSM)
-
-                    if gPacketID != last_gPacketID:
-                        last_gPacketID = gPacketID
-                        graphics = read_graphics_map(graphicSM)
-
-                    data = {"physics": physics, "graphics": graphics}
-                    data_queue.put(copy.deepcopy(data))
-
-                physicSM.seek(0)
-                graphicSM.seek(0)
-
-        else:
-            print("ACC isn't running.")
-            comm.send("READING_FAILURE")
-
-    comm.send("PROCESS_TERMINATED")
-    print("Process Terminated.")
+        return False
 
 
-def saveAccData(data: list):
+    def stop(self):
+        print("[pyASM]: Sending stopping command to process...")
+        self.parent_com.send("STOP_PROCESS")
 
-    use_csv = True
-    use_pickle = False
-
-    if len(data) == 0:
-        print("No data to save.")
-        return
-
-    utc_date = str(datetime.datetime.utcnow())[
-        :-7].replace("-", "_").replace(" ", "-").replace(":", "_")
-
-    if use_csv:
-        print(f"Saving data to '{utc_date}.csv'...")
-
-        start_csv = time.time()
-        with open(f"./{utc_date}.csv", "w", newline="") as dataCsvFp:
-            writer = csv.DictWriter(dataCsvFp, fieldnames=data[0].keys())
-            writer.writeheader()
-            writer.writerows(data)
-        end_csv = time.time()
-
-        print(f"Saving as csv took: {(end_csv - start_csv):.3f}s")
-
-    if use_pickle:
-        print(f"Saving data to '{utc_date}.pckl'...")
-
-        start_pickle = time.time()
-        with open(f"./{utc_date}.pckl", "wb") as dataPickleFp:
-            pickle.dump(data, dataPickleFp)
-        end_pickle = time.time()
-
-        print(f"Saving as pckl took: {(end_pickle - start_pickle):.3f}s")
-
-
-def save_run_simulation(data: list):
-
-    print("Saving data to 'RunSimulation.pckl'...")
-
-    start_pickle = time.time()
-    with open("./RunSimulation.pckl", "wb") as dataPickleFp:
-        pickle.dump(data, dataPickleFp)
-    end_pickle = time.time()
-
-    print(
-        f"Saving data as 'RunSimulation.pckl' took {(end_pickle - start_pickle):.3f}s")
-
-
-def string_time_from_ms(time_in_ms: int) -> str:
-
-    minute = time_in_ms // 60_000
-    second = (time_in_ms % 60_000) // 1000
-    millisecond = (time_in_ms % 60_000) % 1000
-
-    if minute < 10:
-        minute_str = f"0{minute}"
-
-    else:
-        minute_str = str(minute)
-
-    if second < 10:
-        second_str = f"0{second}"
-
-    else:
-        second_str = str(second)
-
-    if millisecond < 100:
-        millisecond_str = f"0{millisecond}"
-
-    elif millisecond < 10:
-        millisecond_str = f"00{millisecond}"
-
-    else:
-        millisecond_str = str(millisecond)
-
-    return f"{minute_str}:{second_str}.{millisecond_str}"
-
-
-def is_key_pressed(key: int) -> bool:
-    # is pressed is the & 0x8000 part
-    return bool(win32api.GetAsyncKeyState(key) & 0x8000)
-
-
-if __name__ == "__main__":
-
-    """
-    Choice
-    1: 333Hz (Huge file size)
-    2: 60Hz (Moderate file size)
-    3: 1Hz (Small File size)
-    4: Once per lap
-    None: Select at runtime
-    """
-
-    choice = 4
-    save_raw = False
-
-    print("Setting up shared memory reader process...")
-    child_com, parent_com = Pipe()
-    data_queue = Queue()
-    shared_memory_reader_process = Process(
-        target=read_shared_memory, args=(child_com, data_queue))
-
-    options = ["1: 333Hz (Huge file size)", "2: 60Hz (Moderate file size)",
-               "3: 1Hz (Small File size)", "4: Once per lap"]
-
-    if not choice:
-        choice = input("Save data at which rate ?\n" + "\n".join(options) + "\n")
-        while choice not in ["1", "2", "3", "4"]:
-            choice = input("Save data at which rate ?\n" +
-                        "\n".join(options) + "\n")
-
-        choice = int(choice)
-
-    else:
-        print(f"Choice {choice} selected by default, set choice to None to show the menu at runtime.")
-
-    if choice == 1:
-        rate = 333
-
-    elif choice == 2:
-        rate = 60
-
-    elif choice == 3 or choice == 4:
-        rate = 1
-
-    print("Reading ACC Shared Memory...")
-    shared_memory_reader_process.start()
-
-    if parent_com.recv() == "READING_SUCCES":
-
-        if save_raw:
-            acc_data_raw = []
-
-        acc_data = []
-        prev_lap = 0
-        timer = 0
-        retry_timer = 0
-        sector_count = -1
-        sectors = []
-
-        # Loop until CTRL + 0 is pressed
-        while not (is_key_pressed(KeyCode.CTRL_L) and is_key_pressed(KeyCode.NUM_0)):
-            
-            sm_data = None
-            if retry_timer < time.time():
+        print("[pyASM]: Waiting for process to finish...")   
+        if (self.parent_com.recv() == "PROCESS_TERMINATED"):
+            # Need to empty the queue before joining process (qsize() isn't 100% accurate)
+            while self.data_queue.qsize() != 0:
                 try:
-                    sm_data = data_queue.get(timeout=0.1)
-
+                    _ = self.data_queue.get_nowait()
                 except queue.Empty:
-                    retry_timer = time.time() + 2
+                    pass
+        else:
+            print("[pyASM]: Received unexpected message, program might be deadlock now.")
 
-            if sm_data:
-                if save_raw:
-                    acc_data_raw.append(sm_data)
-
-                if ((choice != 4 and sm_data["physics"]["packetID"] % (333 // rate) == 0) or (choice == 4 and (prev_lap != sm_data["graphics"]["completedLaps"] and 1000 > sm_data["graphics"]["iCurrentTime"] > 100))):
-                    prev_lap = sm_data["graphics"]["completedLaps"]
-                    acc_data.append(sort_acc_data(sm_data))
-                    print(
-                        f"lap recorded: N°{prev_lap}, time: {string_time_from_ms(sm_data['graphics']['iLastTime'])}")
-
-            # if CTRL and num 5 is pressed
-            if is_key_pressed(KeyCode.CTRL_L) and is_key_pressed(KeyCode.NUM_5) and timer < time.time():
-                print("Saving data by user request.")
-                saveAccData(acc_data)
-                # 5s cooldown to avoid spam
-                timer = time.time() + 5
+        self.asm_reader.join()
 
 
-    print("Sending stopping command to process...")
-    parent_com.send("STOP_PROCESS")
+    def get_sm_data(self) -> dict:
 
-    print("Waiting for process to finish...")
-    if (parent_com.recv() == "PROCESS_TERMINATED"):
-        # Need to empty the queue before joining process (qsize() isn't 100% accurate)
-        while data_queue.qsize() != 0:
+        sm_data = None
+        self.parent_com.send("DATA_REQUEST")
+        if self.parent_com.recv() == "DATA_OK":
             try:
-                if save_raw:
-                    acc_data_raw.append(data_queue.get_nowait())
-                else:
-                    _ = data_queue.get_nowait()
-            except queue.Empty:
+                sm_data = self.data_queue.get(timeout=0.1)
+            
+            except(Queue.empty):
+                # idk 
                 pass
 
-    shared_memory_reader_process.join()
+        return sm_data
 
-    if save_raw:
-        save_run_simulation(acc_data_raw)
 
-    print("Automatically saving data.")
-    saveAccData(acc_data)
+    def get_queue_size(self):
+        """"Only for debugging purpose, return the size of the queue."""
+        return self.data_queue.qsize()
 
-    print("Exiting...")
+
+    @staticmethod
+    def read_shared_memory(comm: Connection, data_queue: Queue):
+
+        with accSM(-1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ) as physicSM, accSM(-1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ) as graphicSM:
+
+            if sum(physicSM.read()) != 0:
+                # Still pass if acc created the memory map first and is now closed but it's fine in this case.
+                physicSM.seek(0)
+
+                comm.send("READING_SUCCES")
+
+                physics = {}
+                graphics = {}
+                last_pPacketID = 0
+                last_gPacketID = 0
+
+                message = ""
+                while message != "STOP_PROCESS":
+
+                    if comm.poll():
+                        message = comm.recv()
+
+                    pPacketID = physicSM.unpack_value("i")
+                    gPacketID = graphicSM.unpack_value("i")
+
+                    if pPacketID != last_pPacketID:
+                        last_pPacketID = pPacketID
+                        physics = read_physic_map(physicSM)
+
+                        if gPacketID != last_gPacketID:
+                            last_gPacketID = gPacketID
+                            graphics = read_graphics_map(graphicSM)
+
+                        if message == "DATA_REQUEST":
+                            data = {"physics": physics, "graphics": graphics}
+                            data_queue.put(copy.deepcopy(data))
+                            comm.send("DATA_OK")
+                            message = ""
+
+                    physicSM.seek(0)
+                    graphicSM.seek(0)
+
+            else:
+                print("[ASM_Reader]: ACC isn't running.")
+                comm.send("READING_FAILURE")
+
+        comm.send("PROCESS_TERMINATED")
+        print("[ASM_Reader]: Process Terminated.")
+
