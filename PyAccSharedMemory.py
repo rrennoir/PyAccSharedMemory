@@ -364,6 +364,75 @@ def read_graphics_map(graphic_map: accSM) -> dict:
     }
 
 
+def read_static_map(static_map: accSM) -> dict:
+    static_map.seek(0)
+    
+    return {
+        "smVersion": static_map.unpack_string(15),
+        "acVersion": static_map.unpack_string(15),
+        "numberOfSessions": static_map.unpack_value("i"),
+        "numCars": static_map.unpack_value("i"),
+        "carModel": static_map.unpack_string(33),
+        "track": static_map.unpack_string(33),
+        "playerName": static_map.unpack_string(33),
+        "playerSurname": static_map.unpack_string(33),
+        "playerNick": static_map.unpack_string(33, 2),
+        "sectorCount": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "maxTorque": static_map.unpack_value("f"),
+        # Not shown in ACC
+        "maxPower": static_map.unpack_value("f"),
+        "maxRpm": static_map.unpack_value("i"),
+        "maxFuel": static_map.unpack_value("f"),
+        # Not shown in ACC
+        "suspensionMaxTravel": static_map.unpack_array("f", 4),
+        # Not shown in ACC
+        "tyreRadius": static_map.unpack_array("f", 4),
+        # Not shown in ACC
+        "maxTurboBoost": static_map.unpack_value("f"),
+        "deprecated_1": static_map.unpack_value("f"),
+        "deprecated_2": static_map.unpack_value("f"),
+        "penaltiesEnabled": static_map.unpack_value("i"),
+        "aidFuelRate": static_map.unpack_value("f"),
+        "aidTireRate": static_map.unpack_value("f"),
+        "aidMechanicalDamage": static_map.unpack_value("f"),
+        "AllowTyreBlankets": static_map.unpack_value("f"),
+        "aidStability": static_map.unpack_value("f"),
+        "aidAutoclutch": static_map.unpack_value("i"),
+        "aidAutoBlip": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "hasDRS": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "hasERS": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "hasKERS": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "kersMaxJ": static_map.unpack_value("f"),
+        # Not shown in ACC
+        "engineBrakeSettingsCount": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "ersPowerControllerCount": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "trackSplineLength": static_map.unpack_value("f"),
+        # Not shown in ACC
+        "trackConfiguration": static_map.unpack_string(33, 2),
+        # Not shown in ACC
+        "ersMaxJ": static_map.unpack_value("f"),
+        # Not shown in ACC
+        "isTimedRace": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "hasExtraLap": static_map.unpack_value("i"),
+        # Not shown in ACC
+        "carSkin": static_map.unpack_string(33, 2),
+        # Not shown in ACC
+        "reversedGridPositions": static_map.unpack_value("i"),
+        "PitWindowStart": static_map.unpack_value("i"),
+        "PitWindowEnd": static_map.unpack_value("i"),
+        "isOnline": static_map.unpack_value("i"),
+        "dryTyresName": static_map.unpack_string(33),
+        "wetTyresName": static_map.unpack_string(33)        
+    }
+
 class accSharedMemory():
 
     def __init__(self) -> None:
@@ -424,7 +493,7 @@ class accSharedMemory():
     @staticmethod
     def read_shared_memory(comm: Connection, data_queue: Queue):
 
-        with accSM(-1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ) as physicSM, accSM(-1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ) as graphicSM:
+        with accSM(-1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ) as physicSM, accSM(-1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ) as graphicSM, accSM(-1, 820, tagname="Local\\acpmf_static", access=mmap.ACCESS_READ) as staticSM:
 
             if sum(physicSM.read()) != 0:
                 # Still pass if acc created the memory map first and is now closed but it's fine in this case.
@@ -434,6 +503,7 @@ class accSharedMemory():
 
                 physics = {}
                 graphics = {}
+                statics = {}
                 last_pPacketID = 0
                 last_gPacketID = 0
 
@@ -453,15 +523,17 @@ class accSharedMemory():
                         if gPacketID != last_gPacketID:
                             last_gPacketID = gPacketID
                             graphics = read_graphics_map(graphicSM)
+                            statics = read_static_map(staticSM)
 
                     if message == "DATA_REQUEST":
-                        data = {"physics": physics, "graphics": graphics}
+                        data = {"physics": physics, "graphics": graphics, "statics": statics}
                         data_queue.put(copy.deepcopy(data))
                         comm.send("DATA_OK")
                         message = ""
 
                     physicSM.seek(0)
                     graphicSM.seek(0)
+                    staticSM.seek(0)
 
             else:
                 print("[ASM_Reader]: ACC isn't running.")
