@@ -1,9 +1,6 @@
 # My shit
-*.csv
-*.json
 *pckl
 test.py
-test_multiprocessing.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
