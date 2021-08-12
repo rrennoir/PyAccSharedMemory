@@ -294,6 +294,15 @@ class StaticsMap:
     dry_tyres_name: str
     wet_tyres_name: str
 
+
+@dataclass
+class ACC_map:
+
+    Physics: PhysicsMap
+    Graphics: GraphicsMap
+    Static: StaticsMap
+
+
 class accSM(mmap.mmap):
 
     def __init__(self, *args, **kwargs):
@@ -836,8 +845,7 @@ class accSharedMemory():
 
         self.asm_reader.join()
 
-
-    def get_sm_data(self) -> dict:
+    def get_sm_data(self) -> ACC_map:
 
         sm_data = None
         self.parent_com.send("DATA_REQUEST")
@@ -868,9 +876,9 @@ class accSharedMemory():
 
                 comm.send("READING_SUCCES")
 
-                physics = {}
-                graphics = {}
-                statics = {}
+                physics = None
+                graphics = None
+                statics = None
                 last_pPacketID = 0
                 last_gPacketID = 0
 
@@ -893,7 +901,7 @@ class accSharedMemory():
                             statics = read_static_map(staticSM)
 
                     if message == "DATA_REQUEST":
-                        data = {"physics": physics, "graphics": graphics, "statics": statics}
+                        data = ACC_map(physics, graphics, statics)
                         data_queue.put(copy.deepcopy(data))
                         comm.send("DATA_OK")
                         message = ""
