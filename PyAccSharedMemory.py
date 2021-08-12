@@ -917,3 +917,27 @@ class accSharedMemory():
         comm.send("PROCESS_TERMINATED")
         print("[ASM_Reader]: Process Terminated.")
 
+
+if __name__ == "__main__":
+
+    asm = accSharedMemory()
+
+    asm.start()
+
+    for i in range(1000):
+        sm = asm.get_sm_data()
+
+        if i % 100 == 0:
+            print(f"Brake bias: {sm.Physics.brake_bias}")
+            print(f"Slipt ratio: {sm.Physics.split_ratio}")
+            print(f"G force: {sm.Physics.g_force}")
+
+            print(f"Current time str: {sm.Graphics.current_time_str}")
+            print(f"Current time int: {sm.Graphics.current_time}")
+            print(f"Setup visible: {sm.Graphics.is_setup_menu_visible}")
+
+            print(f"ACC version: {sm.Static.ac_version}")
+            print(f"Car: {sm.Static.car_model}")
+            print(f"Max RPM: {sm.Static.max_rpm}")
+
+    asm.stop()
