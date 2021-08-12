@@ -96,6 +96,35 @@ class ACC_RAIN_INTENSITY(Enum):
     ACC_THUNDERSTORM = 5
 
 
+@dataclass
+class StaticsMap:
+
+    sm_version: str
+    ac_version: str
+    number_of_session: int
+    num_cars: int
+    car_model: str
+    track: str
+    player_name: str
+    player_surname: str
+    player_nick: str
+    sector_count: int
+    max_rpm: int
+    max_fuel: float
+    penalty_enabled: bool
+    aid_fuel_rate: float
+    aid_tyre_rate: float
+    aid_mechanical_damage: float
+    allow_tyre_blanckets: float
+    aid_stability: float
+    aid_auto_clutch: bool
+    aid_auto_blip: bool
+    pit_window_start: int
+    pit_window_end: int
+    is_online: bool
+    dry_tyres_name: str
+    wet_tyres_name: str
+
 class accSM(mmap.mmap):
 
     def __init__(self, *args, **kwargs):
@@ -366,10 +395,10 @@ def read_graphics_map(graphic_map: accSM) -> dict:
     }
 
 
-def read_static_map(static_map: accSM) -> dict:
+def read_static_map(static_map: accSM) -> StaticsMap:
     static_map.seek(0)
-    
-    return {
+
+    temp = {
         "smVersion": static_map.unpack_string(15),
         "acVersion": static_map.unpack_string(15),
         "numberOfSessions": static_map.unpack_value("i"),
@@ -400,7 +429,7 @@ def read_static_map(static_map: accSM) -> dict:
         "aidMechanicalDamage": static_map.unpack_value("f"),
         "AllowTyreBlankets": static_map.unpack_value("f"),
         "aidStability": static_map.unpack_value("f"),
-        "aidAutoclutch": static_map.unpack_value("i"),
+        "aidAutoClutch": static_map.unpack_value("i"),
         "aidAutoBlip": static_map.unpack_value("i"),
         # Not shown in ACC
         "hasDRS": static_map.unpack_value("i"),
@@ -432,8 +461,37 @@ def read_static_map(static_map: accSM) -> dict:
         "PitWindowEnd": static_map.unpack_value("i"),
         "isOnline": static_map.unpack_value("i"),
         "dryTyresName": static_map.unpack_string(33),
-        "wetTyresName": static_map.unpack_string(33)        
+        "wetTyresName": static_map.unpack_string(33)
     }
+
+    return StaticsMap(
+        temp["smVersion"],
+        temp["acVersion"],
+        temp["numberOfSessions"],
+        temp["numCars"],
+        temp["carModel"],
+        temp["track"],
+        temp["playerName"],
+        temp["playerSurname"],
+        temp["playerNick"],
+        temp["sectorCount"],
+        temp["maxRpm"],
+        temp["maxFuel"],
+        bool(temp["penaltiesEnabled"]),
+        temp["aidFuelRate"],
+        temp["aidTireRate"],
+        temp["aidMechanicalDamage"],
+        temp["AllowTyreBlankets"],
+        temp["aidStability"],
+        bool(temp["aidAutoClutch"]),
+        bool(temp["aidAutoBlip"]),
+        temp["PitWindowStart"],
+        temp["PitWindowEnd"],
+        bool(temp["isOnline"]),
+        temp["dryTyresName"],
+        temp["wetTyresName"]
+    )
+
 
 class accSharedMemory():
 
