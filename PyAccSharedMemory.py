@@ -818,7 +818,6 @@ class accSharedMemory():
         self.data_queue = Queue()
         self.asm_reader = Process(target=self.read_shared_memory, args=(self.child_com, self.data_queue))
 
-
     def start(self) -> bool:
         print("[pyASM]: Reading ACC Shared Memory...")
         self.asm_reader.start()
@@ -827,14 +826,14 @@ class accSharedMemory():
 
         return False
 
-
     def stop(self):
         print("[pyASM]: Sending stopping command to process...")
         self.parent_com.send("STOP_PROCESS")
 
-        print("[pyASM]: Waiting for process to finish...")   
+        print("[pyASM]: Waiting for process to finish...")
         if (self.parent_com.recv() == "PROCESS_TERMINATED"):
-            # Need to empty the queue before joining process (qsize() isn't 100% accurate)
+            # Need to empty the queue before joining process
+            # (qsize() isn't 100% accurate)
             while self.data_queue.qsize() != 0:
                 try:
                     _ = self.data_queue.get_nowait()
@@ -852,18 +851,16 @@ class accSharedMemory():
         if self.parent_com.recv() == "DATA_OK":
             try:
                 sm_data = self.data_queue.get(timeout=0.1)
-            
+
             except(Queue.empty):
-                # idk 
+                # idk
                 pass
 
         return sm_data
 
-
     def get_queue_size(self):
         """"Only for debugging purpose, return the size of the queue."""
         return self.data_queue.qsize()
-
 
     @staticmethod
     def read_shared_memory(comm: Connection, data_queue: Queue):
