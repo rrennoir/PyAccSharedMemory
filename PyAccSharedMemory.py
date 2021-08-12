@@ -183,6 +183,89 @@ class PhysicsMap:
 
 
 @dataclass
+class GraphicsMap:
+
+    packed_id: int
+    status: ACC_STATUS
+    session_type: ACC_SESSION_TYPE
+    current_time_str: str
+    last_time_str: str
+    best_time_str: str
+    last_sector_time_str: str
+    completed_lap: int
+    position: int
+    current_time: int
+    last_time: int
+    best_time: int
+    session_time_left: float
+    distance_traveled: float
+    is_in_pit: bool
+    current_sector_index: int
+    last_sector_time: int
+    number_of_laps: int
+    tyre_compound: str
+    normalized_car_position: float
+    active_cars: int
+    car_coordinates: List[List[float]]
+    car_id: List[int]
+    penalty_time: float
+    flag: ACC_FLAG_TYPE
+    penalty: ACC_PENALTY_TYPE
+    ideal_line_on: bool
+    is_in_pit_lane: bool
+    mandatory_pit_done: bool
+    wind_speed: float
+    wind_direction: float
+    is_setup_menu_visible: bool
+    main_display_index: int
+    secondary_display_index: int
+    tc_level: int
+    tc_cut_level: int
+    engine_map: int
+    abs_level: int
+    fuel_per_lap: float
+    rain_light: bool
+    flashing_light: bool
+    light_stage: int
+    exhaust_temp: float
+    wiper_stage: int
+    driver_stint_total_time_left: int
+    driver_stint_time_left: int
+    rain_tyres: bool
+    session_index: int
+    used_fuel: float
+    delta_lap_time_str: str
+    delta_lap_time: int
+    estimated_lap_time_str: str
+    estimated_lap_time: int
+    is_delta_positive: bool
+    last_sector_time: int
+    is_valid_lap: bool
+    fuel_estimated_laps: float
+    track_status: str
+    missing_mandatory_pits: int
+    clock: float
+    direction_light_left: bool
+    direction_light_right: bool
+    global_yellow: bool
+    global_yellow_s1: bool
+    global_yellow_s2: bool
+    global_yellow_s3: bool
+    global_white: bool
+    global_chequered: bool
+    global_red: bool
+    mfd_tyre_set: int
+    mdf_fuel_to_add: float
+    mdf_tyre_pressure: Wheels
+    track_grip_status: ACC_TRACK_GRIP_STATUS
+    rain_intensity: ACC_RAIN_INTENSITY
+    rain_intensity_in_10min: ACC_RAIN_INTENSITY
+    rain_intensity_in_30min: ACC_RAIN_INTENSITY
+    current_tyre_set: int
+    strategy_tyre_set: int
+
+
+@dataclass
 class StaticsMap:
 
     sm_version: str
@@ -441,9 +524,9 @@ def read_physic_map(physic_map: accSM) -> PhysicsMap:
     )
 
 
-def read_graphics_map(graphic_map: accSM) -> dict:
+def read_graphics_map(graphic_map: accSM) -> GraphicsMap:
     graphic_map.seek(0)
-    return {
+    temp = {
         "packetID": graphic_map.unpack_value("i"),
         "acc_status": ACC_STATUS(graphic_map.unpack_value("i")),
         "acc_session_type": ACC_SESSION_TYPE(graphic_map.unpack_value("i")),
@@ -522,9 +605,9 @@ def read_graphics_map(graphic_map: accSM) -> dict:
         "GlobalRed": graphic_map.unpack_value("i"),
         "mfdTyreSet": graphic_map.unpack_value("i"),
         "mfdFuelToAdd": graphic_map.unpack_value("f"),
-        "mfdTyrePressureLF": graphic_map.unpack_value("f"),
-        "mfdTyrePressureRF": graphic_map.unpack_value("f"),
-        "mfdTyrePressureLR": graphic_map.unpack_value("f"),
+        "mfdTyrePressureFL": graphic_map.unpack_value("f"),
+        "mfdTyrePressureFR": graphic_map.unpack_value("f"),
+        "mfdTyrePressureRL": graphic_map.unpack_value("f"),
         "mfdTyrePressureRR": graphic_map.unpack_value("f"),
         "trackGripStatus": ACC_TRACK_GRIP_STATUS(graphic_map.unpack_value("i")),
         "rainIntensity": ACC_RAIN_INTENSITY(graphic_map.unpack_value("i")),
@@ -533,6 +616,90 @@ def read_graphics_map(graphic_map: accSM) -> dict:
         "currentTyreSet": graphic_map.unpack_value("i"),
         "strategyTyreSet": graphic_map.unpack_value("i")
     }
+
+    return GraphicsMap(
+        temp["packetID"],
+        temp["acc_status"],
+        temp["acc_session_type"],
+        temp["currentTime"],
+        temp["lastTime"],
+        temp["bestTime"],
+        temp["lastSectorTime"],
+        temp["completedLaps"],
+        temp["position"],
+        temp["iCurrentTime"],
+        temp["iLastTime"],
+        temp["iBestTime"],
+        temp["sessionTimeLeft"],
+        temp["distanceTraveled"],
+        bool(temp["isInPit"]),
+        temp["currentSectorIndex"],
+        temp["lastSectorTime"],
+        temp["numberOfLaps"],
+        temp["tyreCompound"],
+        temp["normalizedCarPosition"],
+        temp["activeCars"],
+        temp["carCoordinates"],
+        temp["carID"],
+        temp["penaltyTime"],
+        temp["flag"],
+        temp["penalty"],
+        bool(temp["idealLineOn"]),
+        bool(temp["isInPitLane"]),
+        bool(temp["mandatoryPitDone"]),
+        temp["windSpeed"],
+        temp["windDirection"],
+        bool(temp["isSetupMenuVisible"]),
+        temp["mainDisplayIndex"],
+        temp["secondaryDisplyIndex"],
+        temp["TC"],
+        temp["TCCUT"],
+        temp["EngineMap"],
+        temp["ABS"],
+        temp["fuelXLap"],
+        bool(temp["rainLights"]),
+        bool(temp["flashingLights"]),
+        temp["lightStage"],
+        temp["exhaustTemperature"],
+        temp["wiperStage"],
+        temp["driverStintTotalTimeLeft"],
+        temp["driverStintTimeLeft"],
+        temp["rainTyres"],
+        temp["sessionIndex"],
+        temp["usedFuel"],
+        temp["deltaLapTime"],
+        temp["ideltaLapTime"],
+        temp["estimatedLapTime"],
+        temp["iestimatedLapTime"],
+        bool(temp["isDeltaPositive"]),
+        bool(temp["isValidLap"]),
+        temp["fuelEstimatedLaps"],
+        temp["trackStatus"],
+        temp["missingMandatoryPits"],
+        temp["Clock"],
+        bool(temp["directionLightsLeft"]),
+        bool(temp["directionLightsRight"]),
+        bool(temp["GlobalYellow"]),
+        bool(temp["GlobalYellow1"]),
+        bool(temp["GlobalYellow2"]),
+        bool(temp["GlobalYellow3"]),
+        bool(temp["GlobalWhite"]),
+        bool(temp["GlobalGreen"]),
+        bool(temp["GlobalChequered"]),
+        bool(temp["GlobalRed"]),
+        temp["mfdFuelToAdd"],
+        Wheels(
+            temp["mfdTyrePressureFL"],
+            temp["mfdTyrePressureFR"],
+            temp["mfdTyrePressureRL"],
+            temp["mfdTyrePressureRR"]),
+        temp["trackGripStatus"],
+        temp["rainIntensity"],
+        temp["rainIntensityIn10min"],
+        temp["rainIntensityIn30min"],
+        temp["currentTyreSet"],
+        temp["strategyTyreSet"]
+    )
 
 
 def read_static_map(static_map: accSM) -> StaticsMap:
