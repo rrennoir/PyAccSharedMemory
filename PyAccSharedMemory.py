@@ -97,6 +97,92 @@ class ACC_RAIN_INTENSITY(Enum):
 
 
 @dataclass
+class Vector3f:
+    x: float
+    y: float
+    z: float
+
+
+@dataclass
+class Wheels:
+    front_left: float
+    front_right: float
+    rear_left: float
+    rear_right: float
+
+
+@dataclass
+class PhysicsMap:
+
+    packed_id: int
+    gas: float
+    brake: float
+    fuel: float
+    gear: int
+    rpm: int
+    steer_angle: float
+    speed_kmh: float
+    velocity: Vector3f
+    g_force: Vector3f
+
+    wheel_slip: Wheels
+    wheel_pressure: Wheels
+    wheel_angular_s: Wheels
+    tyre_core_temp: Wheels
+
+    suspension_travel: Wheels
+
+    tc: float
+    heading: float
+    pitch: float
+    roll: float
+    car_damage: List[float]
+    pit_limiter_on: bool
+    abs: float
+
+    autoshifter_on: bool
+    turbo_boost: float
+
+    air_temp: float
+    road_temp: float
+    local_angular_vel: Vector3f
+    final_ff: float
+
+    brake_temp: Wheels
+    clutch: float
+
+    is_ai_controlled: bool
+
+    tyre_contact_point: List[List[float]]
+    tyre_contact_normal: List[List[float]]
+    tyre_contact_heading: List[List[float]]
+
+    brake_bias: float
+
+    local_velocity: Vector3f
+
+    split_ratio: Wheels
+    split_angle: Wheels
+
+    water_temp: float
+
+    brake_pressure: Wheels
+    front_brake_compound: int
+    rear_brake_compound: int
+    pad_life: Wheels
+    disc_life: Wheels
+
+    ignition_on: bool
+    starter_engine_on: bool
+    is_engine_running: bool
+
+    kerb_vibration: float
+    slip_vibration: float
+    g_vibration: float
+    abs_vibration: float
+
+
+@dataclass
 class StaticsMap:
 
     sm_version: str
@@ -155,9 +241,9 @@ class accSM(mmap.mmap):
         return string_bytes.decode("utf-16", errors="ignore")
 
 
-def read_physic_map(physic_map: accSM) -> dict:
+def read_physic_map(physic_map: accSM) -> PhysicsMap:
     physic_map.seek(0)
-    return {
+    temp = {
         "packetID": physic_map.unpack_value("i"),
 
         "gas": physic_map.unpack_value("f"),
@@ -299,6 +385,60 @@ def read_physic_map(physic_map: accSM) -> dict:
         "gVibrations": physic_map.unpack_value("f"),
         "absVibrations": physic_map.unpack_value("f"),
     }
+
+    return PhysicsMap(
+        temp["packetID"],
+        temp["gas"],
+        temp["brake"],
+        temp["fuel"],
+        temp["gear"],
+        temp["rpm"],
+        temp["steerAngle"],
+        temp["speedKmh"],
+        Vector3f(*temp["velocity"]),
+        Vector3f(*temp["accG"]),
+        Wheels(*temp["wheelSlip"]),
+        Wheels(*temp["wheelsPressure"]),
+        Wheels(*temp["wheelAngularSpeed"]),
+        Wheels(*temp["tyreCoreTemperature"]),
+        Wheels(*temp["suspensionTravel"]),
+        temp["tc"],
+        temp["headeing"],
+        temp["pitch"],
+        temp["roll"],
+        temp["carDamage"],
+        bool(temp["pitLimiterOn"]),
+        temp["abs"],
+        bool(temp["autoshifterOn"]),
+        temp["turboBoost"],
+        temp["airTemp"],
+        temp["roadTemp"],
+        Vector3f(*temp["localAngularVel"]),
+        temp["FinalFF"],
+        Wheels(*temp["brakeTemp"]),
+        temp["clutch"],
+        bool(temp["isAIControlled"]),
+        temp["tyreContactPoint"],
+        temp["tyreContactNormal"],
+        temp["tyreContactHeading"],
+        temp["brakeBias"],
+        Vector3f(*temp["localVelocity"]),
+        Wheels(*temp["slipRatio"]),
+        Wheels(*temp["slipAngle"]),
+        temp["waterTemp"],
+        Wheels(*temp["brakePressure"]),
+        temp["frontBrakeCompound"],
+        temp["rearBrakeCompound"],
+        temp["padLife"],
+        temp["discLife"],
+        bool(temp["ignitionOn"]),
+        bool(temp["starterEngineOn"]),
+        bool(temp["isEngineRunning"]),
+        temp["kerbVibration"],
+        temp["slipVibrations"],
+        temp["gVibrations"],
+        temp["absVibrations"],
+    )
 
 
 def read_graphics_map(graphic_map: accSM) -> dict:
