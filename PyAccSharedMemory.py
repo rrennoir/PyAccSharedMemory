@@ -1,10 +1,12 @@
+import copy
 import mmap
-from multiprocessing.connection import Connection
 import queue
 import struct
-import copy
+from dataclasses import dataclass
 from enum import Enum
-from multiprocessing import Process, Queue, Pipe
+from multiprocessing import Pipe, Process, Queue
+from multiprocessing.connection import Connection
+from typing import List
 
 
 class ACC_STATUS(Enum):
