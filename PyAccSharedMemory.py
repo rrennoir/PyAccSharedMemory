@@ -112,6 +112,15 @@ class Wheels:
 
 
 @dataclass
+class CarDamage:
+    front: float
+    rear: float
+    left: float
+    right: float
+    center: float
+
+
+@dataclass
 class PhysicsMap:
 
     packed_id: int
@@ -136,7 +145,7 @@ class PhysicsMap:
     heading: float
     pitch: float
     roll: float
-    car_damage: List[float]
+    car_damage: CarDamage
     pit_limiter_on: bool
     abs: float
 
@@ -502,7 +511,7 @@ def read_physic_map(physic_map: accSM) -> PhysicsMap:
         temp["headeing"],
         temp["pitch"],
         temp["roll"],
-        temp["carDamage"],
+        CarDamage(*temp["carDamage"]),
         bool(temp["pitLimiterOn"]),
         temp["abs"],
         bool(temp["autoshifterOn"]),
