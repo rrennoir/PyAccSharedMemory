@@ -870,53 +870,64 @@ class accSharedMemory():
         return self.data_queue.qsize()
 
     @staticmethod
-    def read_shared_memory(comm: Connection, data_queue: Queue):
+    def read_shared_memory(comm: Connection, data_queue: Queue) -> None:
 
-        with accSM(-1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ) as physicSM, accSM(-1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ) as graphicSM, accSM(-1, 820, tagname="Local\\acpmf_static", access=mmap.ACCESS_READ) as staticSM:
+        physicSM = accSM(
+            -1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ)
+        graphicSM = accSM(
+            -1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ)
+        staticSM = accSM(
+            -1, 820, tagname="Local\\acpmf_static", access=mmap.ACCESS_READ)
 
-            if sum(physicSM.read()) != 0:
-                # Still pass if acc created the memory map first and is now closed but it's fine in this case.
+        if sum(physicSM.read()) != 0:
+            # Still pass if acc created the memory map first
+            # and is now closed but it's fine in this case.
+            physicSM.seek(0)
+
+            comm.send("READING_SUCCES")
+
+            physics = None
+            graphics = None
+            statics = None
+            last_pPacketID = 0
+            last_gPacketID = 0
+
+            message = ""
+            while message != "STOP_PROCESS":
+
+                if comm.poll():
+                    message = comm.recv()
+
+                pPacketID = physicSM.unpack_value("i")
+                gPacketID = graphicSM.unpack_value("i")
+
+                if pPacketID != last_pPacketID:
+                    last_pPacketID = pPacketID
+                    physics = read_physic_map(physicSM)
+
+                    if gPacketID != last_gPacketID:
+                        last_gPacketID = gPacketID
+                        graphics = read_graphics_map(graphicSM)
+                        statics = read_static_map(staticSM)
+
+                if message == "DATA_REQUEST":
+                    data = ACC_map(physics, graphics, statics)
+                    data_queue.put(copy.deepcopy(data))
+                    comm.send("DATA_OK")
+                    message = ""
+
                 physicSM.seek(0)
+                graphicSM.seek(0)
+                staticSM.seek(0)
 
-                comm.send("READING_SUCCES")
+        else:
+            print("[ASM_Reader]: ACC isn't running.")
+            comm.send("READING_FAILURE")
 
-                physics = None
-                graphics = None
-                statics = None
-                last_pPacketID = 0
-                last_gPacketID = 0
-
-                message = ""
-                while message != "STOP_PROCESS":
-
-                    if comm.poll():
-                        message = comm.recv()
-
-                    pPacketID = physicSM.unpack_value("i")
-                    gPacketID = graphicSM.unpack_value("i")
-
-                    if pPacketID != last_pPacketID:
-                        last_pPacketID = pPacketID
-                        physics = read_physic_map(physicSM)
-
-                        if gPacketID != last_gPacketID:
-                            last_gPacketID = gPacketID
-                            graphics = read_graphics_map(graphicSM)
-                            statics = read_static_map(staticSM)
-
-                    if message == "DATA_REQUEST":
-                        data = ACC_map(physics, graphics, statics)
-                        data_queue.put(copy.deepcopy(data))
-                        comm.send("DATA_OK")
-                        message = ""
-
-                    physicSM.seek(0)
-                    graphicSM.seek(0)
-                    staticSM.seek(0)
-
-            else:
-                print("[ASM_Reader]: ACC isn't running.")
-                comm.send("READING_FAILURE")
+        print("[ASM_Reader]: Closing memory maps.")
+        physicSM.close()
+        graphicSM.close()
+        staticSM.close()
 
         comm.send("PROCESS_TERMINATED")
         print("[ASM_Reader]: Process Terminated.")
