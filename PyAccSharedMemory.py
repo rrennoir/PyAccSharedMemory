@@ -170,8 +170,8 @@ class PhysicsMap:
 
     local_velocity: Vector3f
 
-    split_ratio: Wheels
-    split_angle: Wheels
+    slip_ratio: Wheels
+    slip_angle: Wheels
 
     water_temp: float
 
@@ -217,6 +217,7 @@ class GraphicsMap:
     active_cars: int
     car_coordinates: List[List[float]]
     car_id: List[int]
+    player_car_id: int
     penalty_time: float
     flag: ACC_FLAG_TYPE
     penalty: ACC_PENALTY_TYPE
@@ -261,6 +262,7 @@ class GraphicsMap:
     global_yellow_s2: bool
     global_yellow_s3: bool
     global_white: bool
+    global_green: bool
     global_chequered: bool
     global_red: bool
     mfd_tyre_set: int
@@ -293,10 +295,8 @@ class StaticsMap:
     aid_fuel_rate: float
     aid_tyre_rate: float
     aid_mechanical_damage: float
-    allow_tyre_blanckets: float
     aid_stability: float
     aid_auto_clutch: bool
-    aid_auto_blip: bool
     pit_window_start: int
     pit_window_end: int
     is_online: bool
@@ -814,10 +814,8 @@ def read_static_map(static_map: accSM) -> StaticsMap:
         temp["aidFuelRate"],
         temp["aidTireRate"],
         temp["aidMechanicalDamage"],
-        temp["AllowTyreBlankets"],
         temp["aidStability"],
         bool(temp["aidAutoClutch"]),
-        bool(temp["aidAutoBlip"]),
         temp["PitWindowStart"],
         temp["PitWindowEnd"],
         bool(temp["isOnline"]),
@@ -954,7 +952,7 @@ def simple_test() -> None:
 
         if sm is not None and i % 200 == 0:
             print(f"Brake bias: {sm.Physics.brake_bias}")
-            print(f"Slipt ratio: {sm.Physics.split_ratio}")
+            print(f"Slipt ratio: {sm.Physics.slip_ratio}")
             print(f"G force: {sm.Physics.g_force}")
 
             print(f"Current time str: {sm.Graphics.current_time_str}")
