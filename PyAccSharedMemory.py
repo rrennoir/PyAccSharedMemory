@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from multiprocessing import Pipe, Process, Queue
 from multiprocessing.connection import Connection
-from typing import List
+from typing import List, Optional
 
 
 class ACC_STATUS(Enum):
@@ -854,19 +854,16 @@ class accSharedMemory():
 
         self.asm_reader.join()
 
-    def get_sm_data(self) -> ACC_map:
+    @property
+    def sm_data(self) -> Optional[ACC_map]:
 
-        sm_data = None
         self.parent_com.send("DATA_REQUEST")
         if self.parent_com.recv() == "DATA_OK":
             try:
-                sm_data = self.data_queue.get(timeout=0.1)
+                return self.data_queue.get_nowait()
 
-            except(Queue.empty):
-                # idk
-                pass
-
-        return sm_data
+            except(queue.Empty):
+                return None
 
     def get_queue_size(self):
         """"Only for debugging purpose, return the size of the queue."""
