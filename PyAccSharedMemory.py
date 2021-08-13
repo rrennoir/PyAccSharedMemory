@@ -954,11 +954,11 @@ def simple_test() -> None:
 
         if sm is not None and i % 200 == 0:
             print(f"Brake bias: {sm.Physics.brake_bias}")
-            print(f"Slipt ratio: {sm.Physics.slip_ratio}")
+            print(f"Slip ratio: {sm.Physics.slip_ratio}")
             print(f"G force: {sm.Physics.g_force}")
 
             print(f"Current time str: {sm.Graphics.current_time_str}")
-            print(f"Current time int: {sm.Graphics.current_time}")
+            print(f"Position: {sm.Graphics.position}")
             print(f"Setup visible: {sm.Graphics.is_setup_menu_visible}")
 
             print(f"ACC version: {sm.Static.ac_version}")
