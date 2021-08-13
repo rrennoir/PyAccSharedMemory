@@ -37,9 +37,27 @@ asm = accSharedMemory()
 # Start the reader process
 asm.start() # Return false if failed
 
-while (condition):
+for i in range(1000):
     # Receive most latest data available
     sm = asm.sm_data # Return an ACC_map dataclass or None
+
+    # print 5 times some data
+    if sm is not None and i % 200 == 0:
+
+        # Physic map
+        print(f"Brake bias: {sm.Physics.brake_bias}")
+        print(f"Slip ratio: {sm.Physics.slip_ratio}")
+        print(f"G force: {sm.Physics.g_force}")
+
+        # Graphic map
+        print(f"Current time str: {sm.Graphics.current_time_str}")
+        print(f"Position: {sm.Graphics.position}")
+        print(f"Setup visible: {sm.Graphics.is_setup_menu_visible}")
+
+        # Physic map
+        print(f"ACC version: {sm.Static.ac_version}")
+        print(f"Car: {sm.Static.car_model}")
+        print(f"Max RPM: {sm.Static.max_rpm}")
 
 # Close reader process
 asm.stop()
