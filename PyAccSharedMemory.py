@@ -309,20 +309,24 @@ class accSM(mmap.mmap):
         super().__init__()
 
     def unpack_value(self, value_type: str, padding=0) -> float:
-        return struct.unpack(f"={value_type}{padding}x", self.read(4 + padding))[0]
+        bytes = self.read(4 + padding)
+        format = f"={value_type}{padding}x"
+        return struct.unpack(format, bytes)[0]
 
     def unpack_array(self, value_type: str, count: int, padding=0) -> tuple:
 
         if value_type in ("i", "f"):
-            value = struct.unpack(
-                f"={count}{value_type}{padding}x", self.read(4 * count + padding))
+            format = f"={count}{value_type}{padding}x"
+            bytes = self.read(4 * count + padding)
+            value = struct.unpack(format, bytes)
 
         else:
             value = self.read(2 * count + padding)
 
         return value
 
-    def unpack_array2D(self, value_type: str, count: int, subCount: int) -> tuple:
+    def unpack_array2D(
+            self, value_type: str, count: int, subCount: int) -> tuple:
         data = []
         for _ in range(count):
             data.append(self.unpack_array(value_type, subCount))
@@ -618,10 +622,14 @@ def read_graphics_map(graphic_map: accSM) -> GraphicsMap:
         "mfdTyrePressureFR": graphic_map.unpack_value("f"),
         "mfdTyrePressureRL": graphic_map.unpack_value("f"),
         "mfdTyrePressureRR": graphic_map.unpack_value("f"),
-        "trackGripStatus": ACC_TRACK_GRIP_STATUS(graphic_map.unpack_value("i")),
-        "rainIntensity": ACC_RAIN_INTENSITY(graphic_map.unpack_value("i")),
-        "rainIntensityIn10min": ACC_RAIN_INTENSITY(graphic_map.unpack_value("i")),
-        "rainIntensityIn30min": ACC_RAIN_INTENSITY(graphic_map.unpack_value("i")),
+        "trackGripStatus": ACC_TRACK_GRIP_STATUS(
+            graphic_map.unpack_value("i")),
+        "rainIntensity": ACC_RAIN_INTENSITY(
+            graphic_map.unpack_value("i")),
+        "rainIntensityIn10min": ACC_RAIN_INTENSITY(
+            graphic_map.unpack_value("i")),
+        "rainIntensityIn30min": ACC_RAIN_INTENSITY(
+            graphic_map.unpack_value("i")),
         "currentTyreSet": graphic_map.unpack_value("i"),
         "strategyTyreSet": graphic_map.unpack_value("i")
     }
@@ -816,7 +824,9 @@ class accSharedMemory():
         print("[pyASM]: Setting up shared memory reader process...")
         self.child_com, self.parent_com = Pipe()
         self.data_queue = Queue()
-        self.asm_reader = Process(target=self.read_shared_memory, args=(self.child_com, self.data_queue))
+        self.asm_reader = Process(
+            target=self.read_shared_memory, args=(
+                self.child_com, self.data_queue))
 
     def start(self) -> bool:
         print("[pyASM]: Reading ACC Shared Memory...")
