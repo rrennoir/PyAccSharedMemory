@@ -850,7 +850,8 @@ class accSharedMemory():
                 except queue.Empty:
                     pass
         else:
-            print("[pyASM]: Received unexpected message, program might be deadlock now.")
+            print("[pyASM]: Received unexpected message,\
+                 program might be deadlock now.")
 
         self.asm_reader.join()
 
@@ -933,16 +934,16 @@ class accSharedMemory():
         print("[ASM_Reader]: Process Terminated.")
 
 
-if __name__ == "__main__":
+def simple_test() -> None:
 
     asm = accSharedMemory()
 
     asm.start()
 
     for i in range(1000):
-        sm = asm.get_sm_data()
+        sm = asm.sm_data
 
-        if i % 100 == 0:
+        if sm is not None and i % 200 == 0:
             print(f"Brake bias: {sm.Physics.brake_bias}")
             print(f"Slipt ratio: {sm.Physics.split_ratio}")
             print(f"G force: {sm.Physics.g_force}")
@@ -956,3 +957,7 @@ if __name__ == "__main__":
             print(f"Max RPM: {sm.Static.max_rpm}")
 
     asm.stop()
+
+
+if __name__ == "__main__":
+    simple_test()
