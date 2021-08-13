@@ -4,13 +4,14 @@ ACC shared memory reader written in python 😀.
 
 - [PyAccSharedMemory](#pyaccsharedmemory)
   - [Usage](#usage)
-  - [Data structure](#data-structure)
+  - [DataClass](#dataclass)
     - [ACC_map:](#acc_map)
     - [PhysicsMap](#physicsmap)
     - [GraphicsMap](#graphicsmap)
     - [StaticsMap](#staticsmap)
     - [Wheels](#wheels)
     - [CarDamage](#cardamage)
+    - [Vector3f](#vector3f)
   - [additional  information](#additional--information)
     - [Enums](#enums)
       - [ACC_STATUS](#acc_status)
@@ -63,7 +64,7 @@ for i in range(1000):
 asm.stop()
 ```
 
-## Data structure
+## DataClass
 
 Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 
@@ -88,8 +89,8 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | rpm                  | int                     | engine rpm                                       |                          |
 | steer_angle          | float                   | Steering input value                             | From 0.0 to 1.0          |
 | speed_kmh            | float                   | Car speed                                        |                          |
-| velocity             | Vector3f                | Car velocity vector in global coordinates        | Contain 3 floats x, y, z |
-| g_force              | Vector3f                | Car acceleration vector in global coordinates    | Contain 3 floats x, y, z |
+| velocity             | [Vector3f](#vector3f)   | Car velocity vector in global coordinates        | Contain 3 floats x, y, z |
+| g_force              | [Vector3f](#vector3f)   | Car acceleration vector in global coordinates    | Contain 3 floats x, y, z |
 | wheel_slip           | [Wheels](#wheels)       | Tyre slip for each tyre                          |                          |
 | wheel_pressure       | [Wheels](#wheels)       | Tyre pressure                                    |                          |
 | wheel_angular_s      | [Wheels](#wheels)       | Wheel angular speed in rad/s                     |                          |
@@ -106,7 +107,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | turbo_boost          | float                   | Car turbo level                                  |                          |
 | air_temp             | float                   | Air temperature                                  |                          |
 | road_temp            | float                   | Road temperature                                 |                          |
-| local_angular_vel    | Vector3f                | Car angular velocity vector in local coordinates | Contain 3 floats x, y, z |
+| local_angular_vel    | [Vector3f](#vector3f)   | Car angular velocity vector in local coordinates | Contain 3 floats x, y, z |
 | final_ff             | float                   | Force feedback signal                            |                          |
 | brake_temp           | [Wheels](#wheels)       | Brake discs temperatures                         |                          |
 | clutch               | float                   | Clutch pedal input value                         | From 0.0 to 1.0          |
@@ -115,7 +116,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | tyre_contact_normal  | List of List of float   | Tyre contact normal                              | Might be changed later   |
 | tyre_contact_heading | List of List of float   | Tyre contact heading                             | Might be changed later   |
 | brake_bias           | float                   | Front brake bias                                 |                          |
-| local_velocity       | Vector3f                | Car velocity vector in local coordinates         |                          |
+| local_velocity       | [Vector3f](#vector3f)   | Car velocity vector in local coordinates         |                          |
 | slit_ratio           | [Wheels](#wheels)       | Tyre slip ratio                                  |                          |
 | slit_angle           | [Wheels](#wheels)       | Tyre slip angle                                  |                          |
 | water_temp           | float                   | Water Temperature                                |                          |
@@ -265,10 +266,15 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | right  | float | Damage at the right of the car  | from 0.0 to 1.0 |
 | center | float | Damage at the center of the car | from 0.0 to 1.0 |
 
+### Vector3f
 
+| Field | Type  |
+| ----- | ----- |
+| x     | float |
+| y     | float |
+| z     | float |
 
 ## additional  information
-
 
 ### Enums
 
