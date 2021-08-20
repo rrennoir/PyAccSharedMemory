@@ -219,7 +219,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | rain_intensity_in_10min      | [ACC_RAIN_INTENSITY](#acc_rain_intensity)       | Rain intensity in 10 min                      |                                                  |
 | rain_intensity_in_30min      | [ACC_RAIN_INTENSITY](#acc_rain_intensity)       | Rain intensity in 30 min                      |                                                  |
 | current_tyre_set             | int                                             | Tyre Set currently in use                     |                                                  |
-| strategy_tyre_set            | int                                             | Next Tyre Set per Strategy                    |                                                  |
+| strategy_tyre_set            | int                                             | Next tyre set per strategy                    | Original tyre set used for this strategy         |
 
 ### StaticsMap
 
