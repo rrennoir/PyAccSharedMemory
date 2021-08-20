@@ -229,7 +229,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | ac_version            | string | Assetto Corsa version       |                            |
 | number_of_session     | int    | Number of sessions          |                            |
 | num_cars              | int    | Number of cars              |                            |
-| car_model             | string | Name of the car             | see [carmodel](#Car Model) |
+| car_model             | string | Name of the car             | see [carmodel](#car-model) |
 | track                 | string | Track name                  |                            |
 | player_name           | string | Player name                 |                            |
 | player_surname        | string | Player surname              |                            |
