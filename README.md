@@ -32,36 +32,39 @@ ACC shared memory reader written in python 😀.
 Basic code example.
 
 ```py
-# Create a reader instance
-asm = accSharedMemory()
+# On Windows the if __name__ == '__main__' part is necessary
+if __name__ == '__main__'
 
-# Start the reader process
-asm.start() # Return false if failed
+    # Create a reader instance
+    asm = accSharedMemory()
 
-for i in range(1000):
-    # Receive most latest data available
-    sm = asm.sm_data # Return an ACC_map dataclass or None
+    # Start the reader process
+    asm.start() # Return false if failed
 
-    # print 5 times some data
-    if sm is not None and i % 200 == 0:
+    for i in range(1000):
+        # Receive most latest data available
+        sm = asm.sm_data # Return an ACC_map dataclass or None
 
-        # Physic map
-        print(f"Brake bias: {sm.Physics.brake_bias}")
-        print(f"Slip ratio: {sm.Physics.slip_ratio}")
-        print(f"G force: {sm.Physics.g_force}")
+        # print 5 times some data
+        if sm is not None and i % 200 == 0:
 
-        # Graphic map
-        print(f"Current time str: {sm.Graphics.current_time_str}")
-        print(f"Position: {sm.Graphics.position}")
-        print(f"Setup visible: {sm.Graphics.is_setup_menu_visible}")
+            # Physic map
+            print(f"Brake bias: {sm.Physics.brake_bias}")
+            print(f"Slip ratio: {sm.Physics.slip_ratio}")
+            print(f"G force: {sm.Physics.g_force}")
 
-        # Physic map
-        print(f"ACC version: {sm.Static.ac_version}")
-        print(f"Car: {sm.Static.car_model}")
-        print(f"Max RPM: {sm.Static.max_rpm}")
+            # Graphic map
+            print(f"Current time str: {sm.Graphics.current_time_str}")
+            print(f"Position: {sm.Graphics.position}")
+            print(f"Setup visible: {sm.Graphics.is_setup_menu_visible}")
 
-# Close reader process
-asm.stop()
+            # Physic map
+            print(f"ACC version: {sm.Static.ac_version}")
+            print(f"Car: {sm.Static.car_model}")
+            print(f"Max RPM: {sm.Static.max_rpm}")
+
+    # Close reader process
+    asm.stop()
 ```
 
 ## DataClass
