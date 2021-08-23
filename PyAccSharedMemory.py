@@ -892,13 +892,12 @@ class accSharedMemory():
 
         self.asm_reader.join()
 
-    @property
-    def sm_data(self) -> Optional[ACC_map]:
+    def get_data(self) -> Optional[ACC_map]:
 
         self.parent_com.send("DATA_REQUEST")
         if self.parent_com.recv() == "DATA_OK":
             try:
-                return self.data_queue.get_nowait()
+                return self.data_queue.get(timeout=0.1)
 
             except(queue.Empty):
                 return None
@@ -978,7 +977,7 @@ def simple_test() -> None:
     asm.start()
 
     for i in range(1000):
-        sm = asm.sm_data
+        sm = asm.get_data()
 
         if sm is not None and i % 200 == 0:
             print(f"Brake bias: {sm.Physics.brake_bias}")
