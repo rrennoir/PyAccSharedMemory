@@ -110,6 +110,26 @@ class Wheels:
     rear_left: float
     rear_right: float
 
+@dataclass
+class ContactPoint:
+    front_left: Vector3f
+    front_right: Vector3f
+    rear_left: Vector3f
+    rear_right: Vector3f
+
+    @staticmethod
+    def from_list(points: List[List[float]]) -> Any:
+        fl = Vector3f(*points[0])
+        fr = Vector3f(*points[1])
+        rl = Vector3f(*points[2])
+        rr = Vector3f(*points[3])
+
+        return ContactPoint(fl, fr, rl, rr)
+
+    def __str__(self) -> str:
+        return f"FL: {self.front_left},\nFR: {self.front_right},\
+            \nRL: {self.rear_left},\nRR: {self.rear_right}"
+
 
 @dataclass
 class CarDamage:
@@ -162,9 +182,9 @@ class PhysicsMap:
 
     is_ai_controlled: bool
 
-    tyre_contact_point: List[List[float]]
-    tyre_contact_normal: List[List[float]]
-    tyre_contact_heading: List[List[float]]
+    tyre_contact_point: ContactPoint
+    tyre_contact_normal: ContactPoint
+    tyre_contact_heading: ContactPoint
 
     brake_bias: float
 
@@ -523,9 +543,9 @@ def read_physic_map(physic_map: accSM) -> PhysicsMap:
         Wheels(*temp["brakeTemp"]),
         temp["clutch"],
         bool(temp["isAIControlled"]),
-        temp["tyreContactPoint"],
-        temp["tyreContactNormal"],
-        temp["tyreContactHeading"],
+        ContactPoint.from_list(temp["tyreContactPoint"]),
+        ContactPoint.from_list(temp["tyreContactNormal"]),
+        ContactPoint.from_list(temp["tyreContactHeading"]),
         temp["brakeBias"],
         Vector3f(*temp["localVelocity"]),
         Wheels(*temp["slipRatio"]),
