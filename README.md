@@ -12,6 +12,7 @@ ACC shared memory reader written in python 😀.
     - [Wheels](#wheels)
     - [CarDamage](#cardamage)
     - [Vector3f](#vector3f)
+    - [ContactPoint](#contactpoint)
   - [additional  information](#additional--information)
     - [Enums](#enums)
       - [ACC_STATUS](#acc_status)
@@ -43,7 +44,7 @@ if __name__ == '__main__'
 
     for i in range(1000):
         # Receive most latest data available
-        sm = asm.sm_data # Return an ACC_map dataclass or None
+        sm = asm.get_data() # Return an ACC_map dataclass or None
 
         # print 5 times some data
         if sm is not None and i % 200 == 0:
@@ -82,59 +83,59 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 
 ### PhysicsMap
 
-| Field                | Type                    | Description                                      | Comment                  |
-| -------------------- | ----------------------- | ------------------------------------------------ | ------------------------ |
-| packed_id            | int                     | Current step index                               |                          |
-| gas                  | float                   | Gas pedal input value                            | From 0.0 to 1.0          |
-| brake                | float                   | Brake pedal input value                          | From 0.0 to 1.0          |
-| fuel                 | float                   | Amount of fuel remaining in liters               |                          |
-| gear                 | int                     | Current gear                                     |                          |
-| rpm                  | int                     | engine rpm                                       |                          |
-| steer_angle          | float                   | Steering input value                             | From 0.0 to 1.0          |
-| speed_kmh            | float                   | Car speed                                        |                          |
-| velocity             | [Vector3f](#vector3f)   | Car velocity vector in global coordinates        | Contain 3 floats x, y, z |
-| g_force              | [Vector3f](#vector3f)   | Car acceleration vector in global coordinates    | Contain 3 floats x, y, z |
-| wheel_slip           | [Wheels](#wheels)       | Tyre slip for each tyre                          |                          |
-| wheel_pressure       | [Wheels](#wheels)       | Tyre pressure                                    |                          |
-| wheel_angular_s      | [Wheels](#wheels)       | Wheel angular speed in rad/s                     |                          |
-| tyre_core_temp       | [Wheels](#wheels)       | Tyre rubber core temperature                     |                          |
-| suspension_travel    | [Wheels](#wheels)       | Suspension travel                                |                          |
-| tc                   | float                   | TC in action                                     |                          |
-| heading              | float                   | Car yaw orientation                              |                          |
-| pitch                | float                   | Car pitch orientation                            |                          |
-| roll                 | float                   | Car roll orientation                             |                          |
-| car_damage           | [CarDamage](#cardamage) | Car damage                                       |                          |
-| pit_limiter_on       | bool                    | Pit limiter is on                                |                          |
-| abs                  | float                   | ABS in action                                    |                          |
-| autoshifter_on       | bool                    | Automatic transmission on                        |                          |
-| turbo_boost          | float                   | Car turbo level                                  |                          |
-| air_temp             | float                   | Air temperature                                  |                          |
-| road_temp            | float                   | Road temperature                                 |                          |
-| local_angular_vel    | [Vector3f](#vector3f)   | Car angular velocity vector in local coordinates | Contain 3 floats x, y, z |
-| final_ff             | float                   | Force feedback signal                            |                          |
-| brake_temp           | [Wheels](#wheels)       | Brake discs temperatures                         |                          |
-| clutch               | float                   | Clutch pedal input value                         | From 0.0 to 1.0          |
-| is_ai_controlled     | bool                    | Car is controlled by the AI                      |                          |
-| tyre_contact_point   | List of List of float   | Tyre  contact  point  global  coordinates        | Might be changed later   |
-| tyre_contact_normal  | List of List of float   | Tyre contact normal                              | Might be changed later   |
-| tyre_contact_heading | List of List of float   | Tyre contact heading                             | Might be changed later   |
-| brake_bias           | float                   | Front brake bias                                 |                          |
-| local_velocity       | [Vector3f](#vector3f)   | Car velocity vector in local coordinates         |                          |
-| slit_ratio           | [Wheels](#wheels)       | Tyre slip ratio                                  |                          |
-| slit_angle           | [Wheels](#wheels)       | Tyre slip angle                                  |                          |
-| water_temp           | float                   | Water Temperature                                |                          |
-| brake_pressure       | float                   | Brake pressure                                   |                          |
-| front_brake_compound | int                     | Brake pad compund front                          |                          |
-| rear_brake_compound  | int                     | Brake pad compund rear                           |                          |
-| pad_life             | [Wheels](#wheels)       | Brake pad wear                                   | Pad start at 29mm        |
-| disc_life            | [Wheels](#wheels)       | Brake disk wear                                  | Disc start at 32mm       |
-| ignition_on          | bool                    | Ignition is on                                   |                          |
-| starter_engine_on    | bool                    | Engine starter on                                |                          |
-| is_engine_running    | bool                    | Engine running                                   |                          |
-| kerb_vibration       | float                   | Kerb vibrations sent to the FFB                  |                          |
-| slip_vibration       | float                   | Slip vibrations sent to the FFB                  |                          |
-| g_vibration          | float                   | G force vibrations sent to the FFB               |                          |
-| abs_vibration        | float                   | Abs vibrations sent to the FFB                   |                          |
+| Field                | Type                              | Description                                      | Comment                  |
+| -------------------- | --------------------------------- | ------------------------------------------------ | ------------------------ |
+| packed_id            | int                               | Current step index                               |                          |
+| gas                  | float                             | Gas pedal input value                            | From 0.0 to 1.0          |
+| brake                | float                             | Brake pedal input value                          | From 0.0 to 1.0          |
+| fuel                 | float                             | Amount of fuel remaining in liters               |                          |
+| gear                 | int                               | Current gear                                     |                          |
+| rpm                  | int                               | engine rpm                                       |                          |
+| steer_angle          | float                             | Steering input value                             | From 0.0 to 1.0          |
+| speed_kmh            | float                             | Car speed                                        |                          |
+| velocity             | [Vector3f](#vector3f)             | Car velocity vector in global coordinates        | Contain 3 floats x, y, z |
+| g_force              | [Vector3f](#vector3f)             | Car acceleration vector in global coordinates    | Contain 3 floats x, y, z |
+| wheel_slip           | [Wheels](#wheels)                 | Tyre slip for each tyre                          |                          |
+| wheel_pressure       | [Wheels](#wheels)                 | Tyre pressure                                    |                          |
+| wheel_angular_s      | [Wheels](#wheels)                 | Wheel angular speed in rad/s                     |                          |
+| tyre_core_temp       | [Wheels](#wheels)                 | Tyre rubber core temperature                     |                          |
+| suspension_travel    | [Wheels](#wheels)                 | Suspension travel                                |                          |
+| tc                   | float                             | TC in action                                     |                          |
+| heading              | float                             | Car yaw orientation                              |                          |
+| pitch                | float                             | Car pitch orientation                            |                          |
+| roll                 | float                             | Car roll orientation                             |                          |
+| car_damage           | [CarDamage](#cardamage)           | Car damage                                       |                          |
+| pit_limiter_on       | bool                              | Pit limiter is on                                |                          |
+| abs                  | float                             | ABS in action                                    |                          |
+| autoshifter_on       | bool                              | Automatic transmission on                        |                          |
+| turbo_boost          | float                             | Car turbo level                                  |                          |
+| air_temp             | float                             | Air temperature                                  |                          |
+| road_temp            | float                             | Road temperature                                 |                          |
+| local_angular_vel    | [Vector3f](#vector3f)             | Car angular velocity vector in local coordinates | Contain 3 floats x, y, z |
+| final_ff             | float                             | Force feedback signal                            |                          |
+| brake_temp           | [Wheels](#wheels)                 | Brake discs temperatures                         |                          |
+| clutch               | float                             | Clutch pedal input value                         | From 0.0 to 1.0          |
+| is_ai_controlled     | bool                              | Car is controlled by the AI                      |                          |
+| tyre_contact_point   | List of [ContactPoint](#vector3f) | Tyre  contact  point  global  coordinates        |                          |
+| tyre_contact_normal  | List of [ContactPoint](#vector3f) | Tyre contact normal                              |                          |
+| tyre_contact_heading | List of [ContactPoint](#vector3f) | Tyre contact heading                             |                          |
+| brake_bias           | float                             | Front brake bias                                 |                          |
+| local_velocity       | [Vector3f](#vector3f)             | Car velocity vector in local coordinates         |                          |
+| slit_ratio           | [Wheels](#wheels)                 | Tyre slip ratio                                  |                          |
+| slit_angle           | [Wheels](#wheels)                 | Tyre slip angle                                  |                          |
+| water_temp           | float                             | Water Temperature                                |                          |
+| brake_pressure       | float                             | Brake pressure                                   |                          |
+| front_brake_compound | int                               | Brake pad compund front                          |                          |
+| rear_brake_compound  | int                               | Brake pad compund rear                           |                          |
+| pad_life             | [Wheels](#wheels)                 | Brake pad wear                                   | Pad start at 29mm        |
+| disc_life            | [Wheels](#wheels)                 | Brake disk wear                                  | Disc start at 32mm       |
+| ignition_on          | bool                              | Ignition is on                                   |                          |
+| starter_engine_on    | bool                              | Engine starter on                                |                          |
+| is_engine_running    | bool                              | Engine running                                   |                          |
+| kerb_vibration       | float                             | Kerb vibrations sent to the FFB                  |                          |
+| slip_vibration       | float                             | Slip vibrations sent to the FFB                  |                          |
+| g_vibration          | float                             | G force vibrations sent to the FFB               |                          |
+| abs_vibration        | float                             | Abs vibrations sent to the FFB                   |                          |
 
 ### GraphicsMap
 
@@ -161,7 +162,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | tyre_compound                | string                                          | Tyre compound used                            |                                                  |
 | normalized_car_position      | float                                           | Car position on track spline                  |                                                  |
 | active_cars                  | int                                             | Number of cars on track                       |                                                  |
-| car_coordinates              | List of List of float                           | Coordinates of cars on track                  | 60 car max                                       |
+| car_coordinates              | List of [Vector3f](#vector3f)                   | Coordinates of cars on track                  | 60 car max                                       |
 | car_id                       | List of int                                     | Car IDs of cars on track                      | 60 car max                                       |
 | player_car_id                | int                                             | Player Car ID                                 |                                                  |
 | penaltyTime                  | float                                           | Penalty time to wait                          |                                                  |
@@ -277,6 +278,14 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | y     | float |
 | z     | float |
 
+### ContactPoint
+
+| Field       | Type                  |
+| ----------- | --------------------- |
+| front_left  | [Vector3f](#vector3f) |
+| front_right | [Vector3f](#vector3f) |
+| rear_left   | [Vector3f](#vector3f) |
+| rear_right  | [Vector3f](#vector3f) |
 ## additional  information
 
 ### Enums
