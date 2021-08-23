@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from multiprocessing import Pipe, Process, Queue
 from multiprocessing.connection import Connection
-from typing import List, Optional
+from typing import Any, List, Optional
 
 
 class ACC_STATUS(Enum):
@@ -102,6 +102,9 @@ class Vector3f:
     y: float
     z: float
 
+    def __str__(self) -> str:
+        return f"x: {self.x}, y: {self.y}, z: {self.z}"
+
 
 @dataclass
 class Wheels:
@@ -109,6 +112,11 @@ class Wheels:
     front_right: float
     rear_left: float
     rear_right: float
+
+    def __str__(self) -> str:
+        return f"FL: {self.front_left}\nFR: {self.front_right}\
+            \nRL: {self.rear_left}\nRR: {self.rear_right}"
+
 
 @dataclass
 class ContactPoint:
