@@ -243,7 +243,7 @@ class GraphicsMap:
     tyre_compound: str
     normalized_car_position: float
     active_cars: int
-    car_coordinates: List[List[float]]
+    car_coordinates: List[Vector3f]
     car_id: List[int]
     player_car_id: int
     penalty_time: float
@@ -693,7 +693,7 @@ def read_graphics_map(graphic_map: accSM) -> GraphicsMap:
         tyre_compound=temp["tyreCompound"],
         normalized_car_position=temp["normalizedCarPosition"],
         active_cars=temp["activeCars"],
-        car_coordinates=temp["carCoordinates"],
+        car_coordinates=[Vector3f(*car) for car in temp["carCoordinates"]],
         car_id=temp["carID"],
         player_car_id=temp["playerCarID"],
         penalty_time=temp["penaltyTime"],
