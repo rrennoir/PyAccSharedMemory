@@ -294,8 +294,8 @@ class GraphicsMap:
     global_chequered: bool
     global_red: bool
     mfd_tyre_set: int
-    mdf_fuel_to_add: float
-    mdf_tyre_pressure: Wheels
+    mfd_fuel_to_add: float
+    mfd_tyre_pressure: Wheels
     track_grip_status: ACC_TRACK_GRIP_STATUS
     rain_intensity: ACC_RAIN_INTENSITY
     rain_intensity_in_10min: ACC_RAIN_INTENSITY
@@ -743,8 +743,8 @@ def read_graphics_map(graphic_map: accSM) -> GraphicsMap:
         global_chequered=bool(temp["GlobalChequered"]),
         global_red=bool(temp["GlobalRed"]),
         mfd_tyre_set=temp["mfdTyreSet"],
-        mdf_fuel_to_add=temp["mfdFuelToAdd"],
-        mdf_tyre_pressure=Wheels(
+        mfd_fuel_to_add=temp["mfdFuelToAdd"],
+        mfd_tyre_pressure=Wheels(
             temp["mfdTyrePressureFL"],
             temp["mfdTyrePressureFR"],
             temp["mfdTyrePressureRL"],

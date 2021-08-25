@@ -213,8 +213,8 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | global_chequered             | bool                                            | CheckeredFlag is out ?                        |                                                  |
 | global_red                   | bool                                            | RedFlag is out ?                              |                                                  |
 | mfd_tyre_set                 | int                                             | Number of tyre set on the MFD                 |                                                  |
-| mdf_fuel_to_add              | float                                           | How much fuel to add on the MFD               |                                                  |
-| mdf_tyre_pressure            | [Wheels](#wheels)                               | Tyre pressure to add                          |                                                  |
+| mfd_fuel_to_add              | float                                           | How much fuel to add on the MFD               |                                                  |
+| mfd_tyre_pressure            | [Wheels](#wheels)                               | Tyre pressure to add                          |                                                  |
 | track_grip_status            | [ACC_TRACK_GRIP_STATUS](#acc_track_grip_status) | Track grip status                             |                                                  |
 | rain_intensity               | [ACC_RAIN_INTENSITY](#acc_rain_intensity)       | Rain intensity                                |                                                  |
 | rain_intensity_in_10min      | [ACC_RAIN_INTENSITY](#acc_rain_intensity)       | Rain intensity in 10 min                      |                                                  |
