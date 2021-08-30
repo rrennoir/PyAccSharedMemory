@@ -910,56 +910,60 @@ class accSharedMemory():
     def read_shared_memory(comm: Connection, data_queue: Queue) -> None:
 
         physicSM = accSM(
-            -1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_READ)
+            -1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_WRITE)
         graphicSM = accSM(
-            -1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_READ)
+            -1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_WRITE)
         staticSM = accSM(
-            -1, 820, tagname="Local\\acpmf_static", access=mmap.ACCESS_READ)
+            -1, 820, tagname="Local\\acpmf_static", access=mmap.ACCESS_WRITE)
 
-        if sum(physicSM.read()) != 0:
-            # Still pass if acc created the memory map first
-            # and is now closed but it's fine in this case.
-            physicSM.seek(0)
 
-            comm.send("READING_SUCCES")
+        physicSM.seek(0)
 
-            physics = None
-            graphics = None
-            statics = None
-            last_pPacketID = 0
-            last_gPacketID = 0
+        comm.send("READING_SUCCES")
 
-            message = ""
-            while message != "STOP_PROCESS":
+        physics = None
+        graphics = None
+        statics = None
+        last_pPacketID = 0
+        last_gPacketID = 0
+        same_data_counter = 0
 
-                if comm.poll():
-                    message = comm.recv()
+        message = ""
+        while message != "STOP_PROCESS":
 
-                pPacketID = physicSM.unpack_value("i")
-                gPacketID = graphicSM.unpack_value("i")
+            if comm.poll():
+                message = comm.recv()
 
-                if pPacketID != last_pPacketID:
-                    last_pPacketID = pPacketID
-                    physics = read_physic_map(physicSM)
+            pPacketID = physicSM.unpack_value("i")
+            gPacketID = graphicSM.unpack_value("i")
 
-                    if gPacketID != last_gPacketID:
-                        last_gPacketID = gPacketID
-                        graphics = read_graphics_map(graphicSM)
-                        statics = read_static_map(staticSM)
+            if pPacketID != last_pPacketID:
+                same_data_counter = 0
+                last_pPacketID = pPacketID
+                physics = read_physic_map(physicSM)
 
-                if message == "DATA_REQUEST":
+                if gPacketID != last_gPacketID:
+                    last_gPacketID = gPacketID
+                    graphics = read_graphics_map(graphicSM)
+                    statics = read_static_map(staticSM)
+
+            else:                    
+                same_data_counter += 1
+
+            if message == "DATA_REQUEST":
+                if same_data_counter > 333:
+                    data = None
+
+                else:
                     data = ACC_map(physics, graphics, statics)
-                    data_queue.put(copy.deepcopy(data))
-                    comm.send("DATA_OK")
-                    message = ""
+                data_queue.put(copy.deepcopy(data))
+                comm.send("DATA_OK")
+                message = ""
 
-                physicSM.seek(0)
-                graphicSM.seek(0)
-                staticSM.seek(0)
+            physicSM.seek(0)
+            graphicSM.seek(0)
+            staticSM.seek(0)
 
-        else:
-            print("[ASM_Reader]: ACC isn't running.")
-            comm.send("READING_FAILURE")
 
         print("[ASM_Reader]: Closing memory maps.")
         physicSM.close()
