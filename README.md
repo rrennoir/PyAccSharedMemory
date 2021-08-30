@@ -40,7 +40,7 @@ if __name__ == '__main__'
     asm = accSharedMemory()
 
     # Start the reader process
-    asm.start() # Return false if failed
+    asm.start()
 
     for i in range(1000):
         # Receive most latest data available
