@@ -562,8 +562,8 @@ def read_physic_map(physic_map: accSM) -> PhysicsMap:
         Wheels(*temp["brakePressure"]),
         temp["frontBrakeCompound"],
         temp["rearBrakeCompound"],
-        temp["padLife"],
-        temp["discLife"],
+        Wheels(*temp["padLife"]),
+        Wheels(*temp["discLife"]),
         bool(temp["ignitionOn"]),
         bool(temp["starterEngineOn"]),
         bool(temp["isEngineRunning"]),
@@ -947,11 +947,14 @@ class accSharedMemory():
                     graphics = read_graphics_map(graphicSM)
                     statics = read_static_map(staticSM)
 
-            else:                    
+            else:
                 same_data_counter += 1
 
             if message == "DATA_REQUEST":
-                if same_data_counter > 333:
+                if (same_data_counter > 333
+                    or (physics is None
+                        or graphics is None
+                        or statics is None)):
                     data = None
 
                 else:
@@ -963,7 +966,6 @@ class accSharedMemory():
             physicSM.seek(0)
             graphicSM.seek(0)
             staticSM.seek(0)
-
 
         print("[ASM_Reader]: Closing memory maps.")
         physicSM.close()
