@@ -4,7 +4,7 @@ import queue
 import struct
 from dataclasses import dataclass
 from enum import Enum
-from multiprocessing import Pipe, Process, Queue
+import multiprocessing
 from multiprocessing.connection import Connection
 from typing import Any, List, Optional
 
@@ -859,9 +859,9 @@ class accSharedMemory():
     def __init__(self) -> None:
 
         print("[pyASM]: Setting up shared memory reader process...")
-        self.child_com, self.parent_com = Pipe()
-        self.data_queue = Queue()
-        self.asm_reader = Process(
+        self.child_com, self.parent_com = multiprocessing.Pipe()
+        self.data_queue = multiprocessing.Queue()
+        self.asm_reader = multiprocessing.Process(
             target=self.read_shared_memory, args=(
                 self.child_com, self.data_queue))
 
@@ -907,15 +907,15 @@ class accSharedMemory():
         return self.data_queue.qsize()
 
     @staticmethod
-    def read_shared_memory(comm: Connection, data_queue: Queue) -> None:
+    def read_shared_memory(comm: Connection,
+                           data_queue: multiprocessing.Queue) -> None:
 
-        physicSM = accSM(
-            -1, 804, tagname="Local\\acpmf_physics", access=mmap.ACCESS_WRITE)
-        graphicSM = accSM(
-            -1, 1580, tagname="Local\\acpmf_graphics", access=mmap.ACCESS_WRITE)
-        staticSM = accSM(
-            -1, 820, tagname="Local\\acpmf_static", access=mmap.ACCESS_WRITE)
-
+        physicSM = accSM(-1, 804, tagname="Local\\acpmf_physics",
+                         access=mmap.ACCESS_WRITE)
+        graphicSM = accSM(-1, 1580, tagname="Local\\acpmf_graphics",
+                          access=mmap.ACCESS_WRITE)
+        staticSM = accSM(-1, 820, tagname="Local\\acpmf_static",
+                         access=mmap.ACCESS_WRITE)
 
         physicSM.seek(0)
 
