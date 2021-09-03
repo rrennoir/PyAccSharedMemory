@@ -5,7 +5,7 @@ ACC shared memory reader written in python 😀.
 - [PyAccSharedMemory](#pyaccsharedmemory)
   - [Usage](#usage)
   - [DataClass](#dataclass)
-    - [ACC_map:](#acc_map)
+    - [ACC_map](#acc_map)
     - [PhysicsMap](#physicsmap)
     - [GraphicsMap](#graphicsmap)
     - [StaticsMap](#staticsmap)
@@ -13,7 +13,7 @@ ACC shared memory reader written in python 😀.
     - [CarDamage](#cardamage)
     - [Vector3f](#vector3f)
     - [ContactPoint](#contactpoint)
-  - [additional  information](#additional--information)
+  - [additional information](#additional-information)
     - [Enums](#enums)
       - [ACC_STATUS](#acc_status)
       - [ACC_SESSION_TYPE](#acc_session_type)
@@ -25,7 +25,7 @@ ACC shared memory reader written in python 😀.
       - [GT3](#gt3)
       - [GT4](#gt4)
       - [Cup](#cup)
-    - [Super Trofeo](#super-trofeo)
+      - [Super Trofeo](#super-trofeo)
 
 
 ## Usage
@@ -72,7 +72,7 @@ if __name__ == '__main__'
 
 Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 
-### ACC_map:
+### ACC_map
 
 | Field    | Type                        | Description                                                                                                                                                      |
 | -------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -286,7 +286,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | front_right | [Vector3f](#vector3f) |
 | rear_left   | [Vector3f](#vector3f) |
 | rear_right  | [Vector3f](#vector3f) |
-## additional  information
+## additional information
 
 ### Enums
 
@@ -437,7 +437,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | --------------------------- | --------------------- |
 | Porsche9 91 II GT3 Cup 2017 | porsche_991ii_gt3_cup |
 
-### Super Trofeo
+#### Super Trofeo
 
 | Name                        | Kunos ID               |
 | --------------------------- | ---------------------- |
