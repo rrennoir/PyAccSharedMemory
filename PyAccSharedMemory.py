@@ -912,7 +912,8 @@ class accSharedMemory():
 
     @staticmethod
     def read_shared_memory(comm: Connection,
-                           data_queue: multiprocessing.Queue, refresh: int) -> None:
+                           data_queue: multiprocessing.Queue,
+                           refresh: int) -> None:
 
         delta_time = 1 / refresh
 
