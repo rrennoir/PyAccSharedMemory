@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 import multiprocessing
 from multiprocessing.connection import Connection
+import time
 from typing import Any, List, Optional
 
 
@@ -856,14 +857,17 @@ def read_static_map(static_map: accSM) -> StaticsMap:
 
 class accSharedMemory():
 
-    def __init__(self) -> None:
+    def __init__(self, refresh: int = 333) -> None:
+        "Refresh: number of update per second in Hz"
+
+        self.refresh = refresh
 
         print("[pyASM]: Setting up shared memory reader process...")
         self.child_com, self.parent_com = multiprocessing.Pipe()
         self.data_queue = multiprocessing.Queue()
         self.asm_reader = multiprocessing.Process(
             target=self.read_shared_memory, args=(
-                self.child_com, self.data_queue))
+                self.child_com, self.data_queue, refresh))
 
     def start(self) -> bool:
         print("[pyASM]: Reading ACC Shared Memory...")
@@ -908,7 +912,9 @@ class accSharedMemory():
 
     @staticmethod
     def read_shared_memory(comm: Connection,
-                           data_queue: multiprocessing.Queue) -> None:
+                           data_queue: multiprocessing.Queue, refresh: int) -> None:
+
+        delta_time = 1 / refresh
 
         physicSM = accSM(-1, 804, tagname="Local\\acpmf_physics",
                          access=mmap.ACCESS_WRITE)
@@ -930,6 +936,8 @@ class accSharedMemory():
 
         message = ""
         while message != "STOP_PROCESS":
+
+            start = time.time()
 
             if comm.poll():
                 message = comm.recv()
@@ -962,6 +970,12 @@ class accSharedMemory():
                 data_queue.put(copy.deepcopy(data))
                 comm.send("DATA_OK")
                 message = ""
+
+            end = time.time()
+
+            sleep_time = delta_time - (end - start)
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
             physicSM.seek(0)
             graphicSM.seek(0)
