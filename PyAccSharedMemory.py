@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import mmap
 import queue
@@ -218,6 +220,24 @@ class PhysicsMap:
     slip_vibration: float
     g_vibration: float
     abs_vibration: float
+
+    @staticmethod
+    def is_equal(a: PhysicsMap, b: PhysicsMap) -> bool:
+        """
+        Since I won't check every single attribute,
+        comparing suspension_travel is a good alternative
+        since there is always a bit of oscillation in the
+        suspension when the car is possessed by the player.
+
+        Parameters:
+        a: PhysicsMap
+        b: PhysicsMap
+
+        Return:
+        result: bool
+        """
+
+        return a.suspension_travel == b.suspension_travel
 
 
 @dataclass
@@ -929,6 +949,7 @@ class accSharedMemory():
         comm.send("READING_SUCCES")
 
         physics = None
+        old_physics = None
         graphics = None
         statics = None
         last_pPacketID = 0
@@ -946,10 +967,13 @@ class accSharedMemory():
             pPacketID = physicSM.unpack_value("i")
             gPacketID = graphicSM.unpack_value("i")
 
-            if pPacketID != last_pPacketID:
+            physics = read_physic_map(physicSM)
+            if (old_physics is None or
+                    not PhysicsMap.is_equal(old_physics, physics)):
+
                 same_data_counter = 0
+                old_physics = physics
                 last_pPacketID = pPacketID
-                physics = read_physic_map(physicSM)
 
                 if gPacketID != last_gPacketID:
                     last_gPacketID = gPacketID
@@ -960,7 +984,7 @@ class accSharedMemory():
                 same_data_counter += 1
 
             if message == "DATA_REQUEST":
-                if (same_data_counter > 333
+                if (same_data_counter > 10
                     or (physics is None
                         or graphics is None
                         or statics is None)):
