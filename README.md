@@ -143,12 +143,12 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | ---------------------------- | ----------------------------------------------- | --------------------------------------------- | ------------------------------------------------ |
 | packed_id                    | int                                             | Current step index                            |                                                  |
 | status                       | [ACC_STATUS](#acc_status)                       |                                               |                                                  |
-| session_type                 | [ACC_SESSION_TYPE ](#acc_session_type)          |                                               |                                                  |
+| session_type                 | [ACC_SESSION_TYPE](#acc_session_type)           |                                               |                                                  |
 | current_time_str             | string                                          | Current lap time in string                    | Limited to 15 char                               |
 | last_time_str                | string                                          | Last lap time in string                       | Limited to 15 char                               |
 | best_time_str                | string                                          | Best lap time in string                       | Limited to 15 char                               |
 | last_sector_time_str         | string                                          | Last split time in wide string                | Limited to 15 char                               |
-| completed_lap                | int                                             | Number of completed laps                      | Only has a value when the session is over        |
+| completed_lap                | int                                             | Number of completed laps                      |                                                  |
 | position                     | int                                             | Current player position                       |                                                  |
 | current_time                 | int                                             | Current lap time in milliseconds              |                                                  |
 | last_time                    | int                                             | Last lap time in milliseconds                 |                                                  |
@@ -158,7 +158,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | is_in_pit                    | bool                                            | Car is pitting                                |                                                  |
 | current_sector_index         | int                                             | Current track sector                          |                                                  |
 | last_sector_time             | int                                             | Last sector time in milliseconds              |                                                  |
-| number_of_laps               | int                                             | Number of completed laps                      |                                                  |
+| number_of_laps               | int                                             | Number of completed laps                      | Only has a value when the session is over        |
 | tyre_compound                | string                                          | Tyre compound used                            |                                                  |
 | normalized_car_position      | float                                           | Car position on track spline                  |                                                  |
 | active_cars                  | int                                             | Number of cars on track                       |                                                  |
