@@ -9,6 +9,7 @@ from enum import Enum
 import multiprocessing
 from multiprocessing.connection import Connection
 import time
+from tkinter.constants import S
 from typing import Any, List, Optional
 
 
@@ -32,6 +33,40 @@ class ACC_SESSION_TYPE(Enum):
     ACC_DRAG = 6
     ACC_HOTSTINT = 7
     ACC_HOTLAPSUPERPOLE = 8
+
+    def __str__(self) -> str:
+
+        if self == ACC_SESSION_TYPE.ACC_PRACTICE:
+            string = "Practice"
+
+        elif self == ACC_SESSION_TYPE.ACC_QUALIFY:
+            string = "Qualify"
+
+        elif self == ACC_SESSION_TYPE.ACC_RACE:
+            string = "Race"
+
+        elif self == ACC_SESSION_TYPE.ACC_HOTLAP:
+            string = "Hotlap"
+
+        elif self == ACC_SESSION_TYPE.ACC_TIME_ATTACK:
+            string = "Time_Attack"
+
+        elif self == ACC_SESSION_TYPE.ACC_DRIFT:
+            string = "Drift"
+
+        elif self == ACC_SESSION_TYPE.ACC_DRAG:
+            string = "Drag"
+
+        elif self == ACC_SESSION_TYPE.ACC_HOTSTINT:
+            string = "Hotstint"
+
+        elif self == ACC_SESSION_TYPE.ACC_HOTLAPSUPERPOLE:
+            string = "Superpole"
+
+        else:
+            string = "Unknow"
+
+        return string
 
 
 class ACC_FLAG_TYPE(Enum):
