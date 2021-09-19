@@ -27,7 +27,6 @@ ACC shared memory reader written in python 😀.
       - [Cup](#cup)
       - [Super Trofeo](#super-trofeo)
 
-
 ## Usage
 
 Basic code example.
@@ -79,7 +78,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | Physics  | [PhysicsMap](#physicsmap)   | Data that change at each graphic step. They all refer to the player’s car.                                                                                       |
 | Graphics | [GraphicsMap](#graphicsmap) | Data that are updated at each graphical step. They mostly refer to player’s car except for carCoordinates and carID, which refer to the cars currently on track. |
 | Statics  | [StaticsMap](#staticsmap)   | Data that are initialized when the instance starts and never changes until the instance is closed.                                                               |
-
 
 ### PhysicsMap
 
@@ -167,7 +165,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | player_car_id                | int                                             | Player Car ID                                 |                                                  |
 | penaltyTime                  | float                                           | Penalty time to wait                          |                                                  |
 | flag                         | [ACC_FLAG_TYPE](#acc_flag_type)                 |                                               |                                                  |
-| penalty                      | [ACC_PENALTY_TYPE](#acc_penalty_type)           |                                               |                                                  |
+| penalty                      | ~~[ACC_PENALTY_TYPE](#acc_penalty_type)~~ int   |                                               | int until sm doc is fixed on kunos side.         |
 | ideal_line_on                | bool                                            | Ideal line on                                 |                                                  |
 | is_in_pit_lane               | bool                                            | Car is in pit lane                            |                                                  |
 | mandatory_pit_done           | bool                                            | Mandatory pit is completed                    |                                                  |
@@ -250,7 +248,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | dry_tyres_name        | string | Name of the dry tyres       |                            |
 | wet_tyres_name        | string | Name of the wet tyres       |                            |
 
-
 ### Wheels
 
 | Field       | Type  | Description      | Comment |
@@ -286,6 +283,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | front_right | [Vector3f](#vector3f) |
 | rear_left   | [Vector3f](#vector3f) |
 | rear_right  | [Vector3f](#vector3f) |
+
 ## additional information
 
 ### Enums
@@ -314,7 +312,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | ACC_HOTSTINT        | 7     |
 | ACC_HOTLAPSUPERPOLE | 8     |
 
-
 #### ACC_FLAG_TYPE
 
 | Name               | Value |
@@ -328,7 +325,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | ACC_PENALTY_FLAG   | 6     |
 | ACC_GREEN_FLAG     | 7     |
 | ACC_ORANGE_FLAG    | 8     |
-
 
 #### ACC_PENALTY_TYPE
 
@@ -357,7 +353,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | Disqualified_IgnoredDriverStint       | 20    |
 | Disqualified_ExceededDriverStintLimit | 21    |
 
-
 #### ACC_TRACK_GRIP_STATUS
 
 | Name        | Value |
@@ -370,7 +365,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | ACC_WET     | 5     |
 | ACC_FLOODED | 6     |
 
-
 #### ACC_RAIN_INTENSITY
 
 | Name             | Value |
@@ -381,7 +375,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | ACC_MEDIUM_RAIN  | 3     |
 | ACC_HEAVY_RAIN   | 4     |
 | ACC_THUNDERSTORM | 5     |
-
 
 ### Car Model
 
@@ -413,7 +406,6 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | Porsche 911 II GT3 R 2019           | porsche_991ii_gt3_r          |
 | Ferrari 488 GT3 Evo 2020            | ferrari_488_gt3_evo          |
 | Mercedes AMG GT3 Evo 2020           | mercedes_amg_gt3_evo         |
-
 
 #### GT4
 
