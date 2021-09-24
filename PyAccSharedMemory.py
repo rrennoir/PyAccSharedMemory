@@ -2,14 +2,9 @@ from __future__ import annotations
 
 import copy
 import mmap
-import queue
 import struct
 from dataclasses import dataclass
 from enum import Enum
-import multiprocessing
-from multiprocessing.connection import Connection
-import time
-from tkinter.constants import S
 from typing import Any, List, Optional
 
 
@@ -916,152 +911,46 @@ def read_static_map(static_map: accSM) -> StaticsMap:
 
 class accSharedMemory():
 
-    def __init__(self, refresh: int = 333) -> None:
-        "Refresh: number of update per second in Hz"
+    def __init__(self) -> None:
 
-        self.refresh = refresh
+        self.physicSM = accSM(-1, 804, tagname="Local\\acpmf_physics",
+                              access=mmap.ACCESS_WRITE)
+        self.graphicSM = accSM(-1, 1580, tagname="Local\\acpmf_graphics",
+                               access=mmap.ACCESS_WRITE)
+        self.staticSM = accSM(-1, 820, tagname="Local\\acpmf_static",
+                              access=mmap.ACCESS_WRITE)
 
-        print("[pyASM]: Setting up shared memory reader process...")
-        self.child_com, self.parent_com = multiprocessing.Pipe()
-        self.data_queue = multiprocessing.Queue()
-        self.asm_reader = multiprocessing.Process(
-            target=self.read_shared_memory, args=(
-                self.child_com, self.data_queue, refresh))
+        self.physics_old = None
+        self.last_physicsID = 0
 
-    def start(self) -> bool:
-        print("[pyASM]: Reading ACC Shared Memory...")
-        self.asm_reader.start()
-        if self.parent_com.recv() == "READING_SUCCES":
-            return True
+    def read_shared_memory(self) -> Optional[ACC_map]:
 
-        return False
+        physics = read_physic_map(self.physicSM)
+        graphics = read_graphics_map(self.graphicSM)
+        statics = read_static_map(self.staticSM)
 
-    def stop(self):
-        print("[pyASM]: Sending stopping command to process...")
-        self.parent_com.send("STOP_PROCESS")
+        if (physics.packed_id == self.last_physicsID
+                and (self.physics_old is not None
+                     and PhysicsMap.is_equal(self.physics_old, physics))):
+            return None
 
-        print("[pyASM]: Waiting for process to finish...")
-        if (self.parent_com.recv() == "PROCESS_TERMINATED"):
-            # Need to empty the queue before joining process
-            # (qsize() isn't 100% accurate)
-            while self.data_queue.qsize() != 0:
-                try:
-                    _ = self.data_queue.get_nowait()
-                except queue.Empty:
-                    pass
         else:
-            print("[pyASM]: Received unexpected message,\
-                 program might be deadlock now.")
+            self.physics_old = copy.deepcopy(physics)
+            return ACC_map(physics, graphics, statics)
 
-        self.asm_reader.join()
-
-    def get_data(self) -> Optional[ACC_map]:
-
-        self.parent_com.send("DATA_REQUEST")
-        if self.parent_com.recv() == "DATA_OK":
-            try:
-                return self.data_queue.get(timeout=0.1)
-
-            except(queue.Empty):
-                return None
-
-    def get_queue_size(self):
-        """"Only for debugging purpose, return the size of the queue."""
-        return self.data_queue.qsize()
-
-    @staticmethod
-    def read_shared_memory(comm: Connection,
-                           data_queue: multiprocessing.Queue,
-                           refresh: int) -> None:
-
-        delta_time = 1 / refresh
-
-        physicSM = accSM(-1, 804, tagname="Local\\acpmf_physics",
-                         access=mmap.ACCESS_WRITE)
-        graphicSM = accSM(-1, 1580, tagname="Local\\acpmf_graphics",
-                          access=mmap.ACCESS_WRITE)
-        staticSM = accSM(-1, 820, tagname="Local\\acpmf_static",
-                         access=mmap.ACCESS_WRITE)
-
-        physicSM.seek(0)
-
-        comm.send("READING_SUCCES")
-
-        physics = None
-        old_physics = None
-        graphics = None
-        statics = None
-        last_pPacketID = 0
-        last_gPacketID = 0
-        same_data_counter = 0
-
-        message = ""
-        while message != "STOP_PROCESS":
-
-            start = time.time()
-
-            if comm.poll():
-                message = comm.recv()
-
-            pPacketID = physicSM.unpack_value("i")
-            gPacketID = graphicSM.unpack_value("i")
-
-            physics = read_physic_map(physicSM)
-            if (old_physics is None or
-                    not PhysicsMap.is_equal(old_physics, physics)):
-
-                same_data_counter = 0
-                old_physics = physics
-                last_pPacketID = pPacketID
-
-                if gPacketID != last_gPacketID:
-                    last_gPacketID = gPacketID
-                    graphics = read_graphics_map(graphicSM)
-                    statics = read_static_map(staticSM)
-
-            else:
-                same_data_counter += 1
-
-            if message == "DATA_REQUEST":
-                if (same_data_counter > 10
-                    or (physics is None
-                        or graphics is None
-                        or statics is None)):
-                    data = None
-
-                else:
-                    data = ACC_map(physics, graphics, statics)
-                data_queue.put(copy.deepcopy(data))
-                comm.send("DATA_OK")
-                message = ""
-
-            end = time.time()
-
-            sleep_time = delta_time - (end - start)
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-
-            physicSM.seek(0)
-            graphicSM.seek(0)
-            staticSM.seek(0)
-
+    def close(self) -> None:
         print("[ASM_Reader]: Closing memory maps.")
-        physicSM.close()
-        graphicSM.close()
-        staticSM.close()
-
-        comm.send("PROCESS_TERMINATED")
-        print("[ASM_Reader]: Process Terminated.")
+        self.physicSM.close()
+        self.graphicSM.close()
+        self.staticSM.close()
 
 
 def simple_test() -> None:
 
     asm = accSharedMemory()
 
-    asm.start()
-
     for i in range(1000):
-        sm = asm.get_data()
+        sm = asm.read_shared_memory()
 
         if sm is not None and i % 200 == 0:
             print(f"Brake bias: {sm.Physics.brake_bias}")
@@ -1076,7 +965,7 @@ def simple_test() -> None:
             print(f"Car: {sm.Static.car_model}")
             print(f"Max RPM: {sm.Static.max_rpm}")
 
-    asm.stop()
+    asm.close()
 
 
 if __name__ == "__main__":
