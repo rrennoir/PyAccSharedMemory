@@ -930,8 +930,8 @@ class accSharedMemory():
         statics = read_static_map(self.staticSM)
 
         if (physics.packed_id == self.last_physicsID
-                and (self.physics_old is not None
-                     and PhysicsMap.is_equal(self.physics_old, physics))):
+                or (self.physics_old is not None
+                    and PhysicsMap.is_equal(self.physics_old, physics))):
             return None
 
         else:
