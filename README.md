@@ -38,12 +38,9 @@ if __name__ == '__main__'
     # Create a reader instance
     asm = accSharedMemory()
 
-    # Start the reader process
-    asm.start()
-
     for i in range(1000):
         # Receive most latest data available
-        sm = asm.get_data() # Return an ACC_map dataclass or None
+        sm = asm.read_shared_memory() # Return an ACC_map dataclass or None
 
         # print 5 times some data
         if sm is not None and i % 200 == 0:
@@ -63,8 +60,8 @@ if __name__ == '__main__'
             print(f"Car: {sm.Static.car_model}")
             print(f"Max RPM: {sm.Static.max_rpm}")
 
-    # Close reader process
-    asm.stop()
+    # Close reader
+    asm.close()
 ```
 
 ## DataClass
