@@ -8,6 +8,10 @@ from enum import Enum
 from typing import Any, List, Optional
 
 
+class SharedMemoryTimeout(Exception):
+    pass
+
+
 class ACC_STATUS(Enum):
 
     ACC_OFF = 0
@@ -937,6 +941,18 @@ class accSharedMemory():
         else:
             self.physics_old = copy.deepcopy(physics)
             return ACC_map(physics, graphics, statics)
+
+    def get_shared_memory_data(self) -> ACC_map:
+
+        # try 1000 time to get the data, else raise exception
+        for i in range(1000):
+
+            data = self.read_shared_memory()
+            if data is not None:
+                return data
+
+        else:
+            raise SharedMemoryTimeout("No data available to read")
 
     def close(self) -> None:
         print("[ASM_Reader]: Closing memory maps.")
