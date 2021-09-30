@@ -122,6 +122,31 @@ class ACC_TRACK_GRIP_STATUS(Enum):
     ACC_WET = 5
     ACC_FLOODED = 6
 
+    def __str__(self) -> str:
+
+        if self == ACC_TRACK_GRIP_STATUS.ACC_GREEN:
+            string = "Green"
+
+        elif self == ACC_TRACK_GRIP_STATUS.ACC_FAST:
+            string = "Fast"
+
+        elif self == ACC_TRACK_GRIP_STATUS.ACC_OPTIMUM:
+            string = "Optimum"
+
+        elif self == ACC_TRACK_GRIP_STATUS.ACC_GREASY:
+            string = "Greasy"
+
+        elif self == ACC_TRACK_GRIP_STATUS.ACC_DAMP:
+            string = "Damp"
+
+        elif self == ACC_TRACK_GRIP_STATUS.ACC_WET:
+            string = "Wet"
+
+        elif self == ACC_TRACK_GRIP_STATUS.ACC_FLOODED:
+            string = "Flooded"
+
+        return string
+
 
 class ACC_RAIN_INTENSITY(Enum):
 
