@@ -157,6 +157,28 @@ class ACC_RAIN_INTENSITY(Enum):
     ACC_HEAVY_RAIN = 4
     ACC_THUNDERSTORM = 5
 
+    def __str__(self) -> str:
+
+        if self == ACC_RAIN_INTENSITY.ACC_NO_RAIN:
+            string = "No Rain"
+
+        elif self == ACC_RAIN_INTENSITY.ACC_DRIZZLE:
+            string = "Drizzle"
+
+        elif self == ACC_RAIN_INTENSITY.ACC_LIGHT_RAIN:
+            string = "Light Rain"
+
+        elif self == ACC_RAIN_INTENSITY.ACC_MEDIUM_RAIN:
+            string = "Medium Rain"
+
+        elif self == ACC_RAIN_INTENSITY.ACC_HEAVY_RAIN:
+            string = "Heavy rain"
+
+        elif self == ACC_RAIN_INTENSITY.ACC_THUNDERSTORM:
+            string = "Thunderstorm"
+
+        return string
+
 
 @dataclass
 class Vector3f:
