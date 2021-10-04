@@ -118,6 +118,7 @@ Description are moslty a copy past of the ACCSharedMemoryDocumentationV1.x.x.pdf
 | local_velocity       | [Vector3f](#vector3f)             | Car velocity vector in local coordinates         |                          |
 | slit_ratio           | [Wheels](#wheels)                 | Tyre slip ratio                                  |                          |
 | slit_angle           | [Wheels](#wheels)                 | Tyre slip angle                                  |                          |
+| suspension_damage    | [Wheels](#wheels)                 | Damage of the suspension                         | from 0.0 to 0.1          |
 | water_temp           | float                             | Water Temperature                                |                          |
 | brake_pressure       | float                             | Brake pressure                                   |                          |
 | front_brake_compound | int                               | Brake pad compund front                          |                          |

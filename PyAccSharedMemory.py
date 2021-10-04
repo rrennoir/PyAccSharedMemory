@@ -285,6 +285,7 @@ class PhysicsMap:
     slip_ratio: Wheels
     slip_angle: Wheels
 
+    suspension_damage: Wheels
     water_temp: float
 
     brake_pressure: Wheels
@@ -662,6 +663,7 @@ def read_physic_map(physic_map: accSM) -> PhysicsMap:
         Vector3f(*temp["localVelocity"]),
         Wheels(*temp["slipRatio"]),
         Wheels(*temp["slipAngle"]),
+        Wheels(*temp["suspensionDamage"]),
         temp["waterTemp"],
         Wheels(*temp["brakePressure"]),
         temp["frontBrakeCompound"],
