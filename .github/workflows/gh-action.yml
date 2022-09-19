@@ -1,7 +1,11 @@
 name: GitHub Actions Demo
-on: [push]
+on:
+  label:
+    types:
+      - created
+
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -15,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install twine wheel
+          python -m pip install wheel
 
       - name: Build package
         run: python setup.py bdist_wheel sdist
@@ -24,3 +28,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+          # skip_existing: true
