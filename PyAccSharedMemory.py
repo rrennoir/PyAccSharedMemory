@@ -237,7 +237,7 @@ class CarDamage:
     rear: float
     left: float
     right: float
-    center: float # Center is actually the sum of all
+    center: float  # Center is actually the sum of all
 
 
 @dataclass
@@ -1037,16 +1037,13 @@ def simple_test() -> None:
         sm = asm.read_shared_memory()
 
         if sm is not None and i % 200 == 0:
-            print(f"Brake bias: {sm.Physics.brake_bias}")
-            print(f"Slip ratio: {sm.Physics.slip_ratio}")
-            print(f"G force: {sm.Physics.g_force}")
+            print("Physics:")
+            print(f"Pad life: {sm.Physics.pad_life}")
 
-            print(f"Current time str: {sm.Graphics.current_time_str}")
-            print(f"Position: {sm.Graphics.position}")
-            print(f"Setup visible: {sm.Graphics.is_setup_menu_visible}")
+            print("Graphics:")
+            print(f"Strategy tyre set: {sm.Graphics.penalty.name}")
 
-            print(f"ACC version: {sm.Static.ac_version}")
-            print(f"Car: {sm.Static.car_model}")
+            print("Static: ")
             print(f"Max RPM: {sm.Static.max_rpm}")
 
     asm.close()
