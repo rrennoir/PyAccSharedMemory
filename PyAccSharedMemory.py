@@ -985,11 +985,11 @@ class accSharedMemory():
 
     def __init__(self) -> None:
 
-        self.physicSM = accSM(-1, 804, tagname="Local\\acpmf_physics",
+        self.physicSM = accSM(-1, 800, tagname="Local\\acpmf_physics",
                               access=mmap.ACCESS_WRITE)
-        self.graphicSM = accSM(-1, 1580, tagname="Local\\acpmf_graphics",
+        self.graphicSM = accSM(-1, 1588, tagname="Local\\acpmf_graphics",
                                access=mmap.ACCESS_WRITE)
-        self.staticSM = accSM(-1, 820, tagname="Local\\acpmf_static",
+        self.staticSM = accSM(-1, 784, tagname="Local\\acpmf_static",
                               access=mmap.ACCESS_WRITE)
 
         self.physics_old = None
