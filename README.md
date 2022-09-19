@@ -3,6 +3,7 @@
 ACC shared memory reader written in python 😀.
 
 - [PyAccSharedMemory](#pyaccsharedmemory)
+  - [Installation](#installation)
   - [Usage](#usage)
   - [DataClass](#dataclass)
     - [ACC_map](#acc_map)
@@ -26,6 +27,12 @@ ACC shared memory reader written in python 😀.
       - [GT4](#gt4)
       - [TC](#tc)
       - [Cup cars](#cup-cars)
+
+## Installation
+
+Simply install the package or copy the pyaccsharedmemory.py file in your project
+
+`pip install pyaccsharedmemory`
 
 ## Usage
 
