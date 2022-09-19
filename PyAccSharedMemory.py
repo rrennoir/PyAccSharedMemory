@@ -83,6 +83,13 @@ class ACC_FLAG_TYPE(Enum):
 
 class ACC_PENALTY_TYPE(Enum):
 
+    """
+    Wrong way is 22 now ?
+    What's 18 then ?
+    Are there any other non documented enums ... ?
+    """
+
+    UnknownValue = -1
     No_penalty = 0
     DriveThrough_Cutting = 1
     StopAndGo_10_Cutting = 2
@@ -104,12 +111,13 @@ class ACC_PENALTY_TYPE(Enum):
     Disqualified_Trolling = 15
     Disqualified_PitEntry = 16
     Disqualified_PitExit = 17
-    Disqualified_WrongWay = 18
+    Disqualified_WrongWay_old = 18
 
     DriveThrough_IgnoredDriverStint = 19
     Disqualified_IgnoredDriverStint = 20
 
     Disqualified_ExceededDriverStintLimit = 21
+    Disqualified_WrongWay = 22
 
 
 class ACC_TRACK_GRIP_STATUS(Enum):
@@ -351,9 +359,7 @@ class GraphicsMap:
     player_car_id: int
     penalty_time: float
     flag: ACC_FLAG_TYPE
-    # penalty: ACC_PENALTY_TYPE
-    # TODO until kunos fix their shit
-    penalty: int
+    penalty: ACC_PENALTY_TYPE
     ideal_line_on: bool
     is_in_pit_lane: bool
     mandatory_pit_done: bool
@@ -714,9 +720,7 @@ def read_graphics_map(graphic_map: accSM) -> GraphicsMap:
         "playerCarID": graphic_map.unpack_value("i"),
         "penaltyTime": graphic_map.unpack_value("f"),
         "flag": ACC_FLAG_TYPE(graphic_map.unpack_value("i")),
-        # "penalty": ACC_PENALTY_TYPE(graphic_map.unpack_value("i")),
-        # TODO until kunos fix their shit
-        "penalty": graphic_map.unpack_value("i"),
+        "penalty": penalty_workarround(graphic_map),
         "idealLineOn": graphic_map.unpack_value("i"),
         "isInPitLane": graphic_map.unpack_value("i"),
         # Return always 0
@@ -966,6 +970,15 @@ def read_static_map(static_map: accSM) -> StaticsMap:
         temp["dryTyresName"],
         temp["wetTyresName"]
     )
+
+
+def penalty_workarround(graphic_map: accSM) -> ACC_PENALTY_TYPE:
+
+    try:
+        return ACC_PENALTY_TYPE(graphic_map.unpack_value("i"))
+
+    except(ValueError):
+        return ACC_PENALTY_TYPE.UnknownValue
 
 
 class accSharedMemory():
