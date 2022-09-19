@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pyaccsharedmemory",
-    version="0.0.1",
+    version="0.0.2",
     author="Ryan Rennoir",
     author_email="ryanrennoir9@gmail.com",
     url="https://github.com/rrennoir/PyAccSharedMemory",
