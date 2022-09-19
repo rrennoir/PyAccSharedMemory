@@ -1,8 +1,8 @@
-name: GitHub Actions Demo
+name: Build and publish pyaccsharedmemory
 on:
-  label:
-    types:
-      - created
+  push:
+    branches:
+      - main
 
 jobs:
   build-and-publish:
