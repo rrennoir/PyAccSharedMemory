@@ -229,7 +229,7 @@ class CarDamage:
     rear: float
     left: float
     right: float
-    center: float
+    center: float # Center is actually the sum of all
 
 
 @dataclass
@@ -407,6 +407,8 @@ class GraphicsMap:
     rain_intensity_in_30min: ACC_RAIN_INTENSITY
     current_tyre_set: int
     strategy_tyre_set: int
+    gap_ahead: int
+    gap_behind: int
 
 
 @dataclass
@@ -776,7 +778,9 @@ def read_graphics_map(graphic_map: accSM) -> GraphicsMap:
         "rainIntensityIn30min": ACC_RAIN_INTENSITY(
             graphic_map.unpack_value("i")),
         "currentTyreSet": graphic_map.unpack_value("i"),
-        "strategyTyreSet": graphic_map.unpack_value("i")
+        "strategyTyreSet": graphic_map.unpack_value("i"),
+        "gapAhead": graphic_map.unpack_value("i"),
+        "gapBehind": graphic_map.unpack_value("i")
     }
 
     return GraphicsMap(
@@ -862,7 +866,9 @@ def read_graphics_map(graphic_map: accSM) -> GraphicsMap:
         rain_intensity_in_10min=temp["rainIntensityIn10min"],
         rain_intensity_in_30min=temp["rainIntensityIn30min"],
         current_tyre_set=temp["currentTyreSet"],
-        strategy_tyre_set=temp["strategyTyreSet"]
+        strategy_tyre_set=temp["strategyTyreSet"],
+        gap_ahead=temp["gapAhead"],
+        gap_behind=temp["gapBehind"],
     )
 
 
