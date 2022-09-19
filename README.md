@@ -32,36 +32,22 @@ ACC shared memory reader written in python 😀.
 Basic code example.
 
 ```py
-# On Windows the if __name__ == '__main__' part is necessary
-if __name__ == '__main__'
+from pyaccsharedmemory import accSharedMemory
 
-    # Create a reader instance
-    asm = accSharedMemory()
+asm = accSharedMemory()
+sm = asm.read_shared_memory()
 
-    for i in range(1000):
-        # Receive most latest data available
-        sm = asm.read_shared_memory() # Return an ACC_map dataclass or None
+if (sm is not None):
+    print("Physics:")
+    print(f"Pad life: {sm.Physics.pad_life}")
 
-        # print 5 times some data
-        if sm is not None and i % 200 == 0:
+    print("Graphics:")
+    print(f"Strategy tyre set: {sm.Graphics.penalty.name}")
 
-            # Physic map
-            print(f"Brake bias: {sm.Physics.brake_bias}")
-            print(f"Slip ratio: {sm.Physics.slip_ratio}")
-            print(f"G force: {sm.Physics.g_force}")
+    print("Static: ")
+    print(f"Max RPM: {sm.Static.max_rpm}")
 
-            # Graphic map
-            print(f"Current time str: {sm.Graphics.current_time_str}")
-            print(f"Position: {sm.Graphics.position}")
-            print(f"Setup visible: {sm.Graphics.is_setup_menu_visible}")
-
-            # Physic map
-            print(f"ACC version: {sm.Static.ac_version}")
-            print(f"Car: {sm.Static.car_model}")
-            print(f"Max RPM: {sm.Static.max_rpm}")
-
-    # Close reader
-    asm.close()
+asm.close()
 ```
 
 ## DataClass
